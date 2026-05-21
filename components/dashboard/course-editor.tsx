@@ -83,6 +83,7 @@ export function CourseEditor({ course }: CourseEditorProps) {
   }
 
   async function handleAddLesson(lessonData: Partial<Lesson>) {
+    console.log('[v0] handleAddLesson called with:', lessonData)
     const { data, error } = await supabase
       .from('lessons')
       .insert({
@@ -96,6 +97,7 @@ export function CourseEditor({ course }: CourseEditorProps) {
       .select()
       .single()
 
+    console.log('[v0] lesson insert result:', { data, error })
     if (error) {
       toast.error(error.message)
       return
@@ -410,6 +412,7 @@ function LessonForm({ lesson, onSubmit, onCancel }: LessonFormProps) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    console.log('[v0] LessonForm handleSubmit called, title:', title)
     setIsLoading(true)
     await onSubmit({
       title,
