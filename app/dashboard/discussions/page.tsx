@@ -1,28 +1,41 @@
 import { createClient } from '@/lib/supabase/server'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { MessageSquare, BookOpen } from 'lucide-react'
-import Link from 'next/link'
+import { Card, CardContent } from '@/components/ui/card'
+import { MessageSquare } from 'lucide-react'
+import { DiscussionThread } from '@/components/discussion-thread'
 
 export default async function DiscussionsPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Get courses by instructor
-  const { data: courses } = await supabase
-    .from('courses')
-    .select('id')
-    .eq('instructor_id', user?.id)
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user?.id)
+    .single()
 
-  const courseIds = courses?.map(c => c.id) || []
+  // For instructors: get their course IDs; for admins: get all
+  let courseIds: string[] = []
+  if (profile?.role === 'admin') {
+    const { data: allCourses } = await supabase.from('courses').select('id')
+    courseIds = allCourses?.map(c => c.id) || []
+  } else {
+    const { data: courses } = await supabase
+      .from('courses')
+      .select('id')
+      .eq('instructor_id', user?.id)
+    courseIds = courses?.map(c => c.id) || []
+  }
 
-  // Get discussions for these courses
   const { data: discussions } = await supabase
     .from('discussions')
     .select(`
       *,
-      user:profiles(full_name, email),
+      user:profiles!user_id(full_name, email, role),
       course:courses(id, title),
-      discussion_replies(count)
+      replies:discussion_replies(
+        *,
+        user:profiles!user_id(full_name, email, role)
+      )
     `)
     .in('course_id', courseIds.length > 0 ? courseIds : [''])
     .order('created_at', { ascending: false })
@@ -37,32 +50,31 @@ export default async function DiscussionsPage() {
       </div>
 
       {discussions && discussions.length > 0 ? (
-        <div className="space-y-4">
-          {discussions.map((discussion) => (
-            <Card key={discussion.id}>
-              <CardContent className="p-6">
-                <div className="space-y-2">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h3 className="font-semibold">{discussion.title}</h3>
-                      <p className="text-sm text-muted-foreground">{discussion.content}</p>
-                    </div>
-                    <Link href={`/courses/${discussion.course?.id}`}>
-                      <span className="text-xs font-medium text-primary hover:underline">
-                        {discussion.course?.title}
-                      </span>
-                    </Link>
-                  </div>
-                  <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <span>by {discussion.user?.full_name || 'User'}</span>
-                    <div className="flex items-center gap-2">
-                      <MessageSquare className="h-4 w-4" />
-                      {discussion.discussion_replies?.[0]?.count || 0} replies
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+        <div className="space-y-6">
+          {/* Group by course */}
+          {Object.entries(
+            discussions.reduce<Record<string, typeof discussions>>((acc, d) => {
+              const key = d.course?.title ?? 'Unknown Course'
+              if (!acc[key]) acc[key] = []
+              acc[key].push(d)
+              return acc
+            }, {})
+          ).map(([courseTitle, courseDiscussions]) => (
+            <div key={courseTitle}>
+              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                {courseTitle}
+              </h2>
+              <div className="space-y-3">
+                {courseDiscussions.map(discussion => (
+                  <DiscussionThread
+                    key={discussion.id}
+                    discussion={discussion}
+                    currentUserId={user?.id ?? ''}
+                    currentUserRole={profile?.role}
+                  />
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       ) : (
