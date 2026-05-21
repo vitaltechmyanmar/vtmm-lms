@@ -32,7 +32,6 @@ const studentNavItems = [
 const instructorNavItems = [
   { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
   { href: '/dashboard/courses', label: 'My Courses', icon: BookOpen },
-  { href: '/dashboard/courses/new', label: 'Create Course', icon: PlusCircle },
   { href: '/dashboard/students', label: 'Students', icon: Users },
   { href: '/dashboard/analytics', label: 'Analytics', icon: BarChart3 },
   { href: '/dashboard/discussions', label: 'Discussions', icon: MessageSquare },
@@ -43,6 +42,7 @@ const adminNavItems = [
   { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
   { href: '/dashboard/admin/users', label: 'Users', icon: Users },
   { href: '/dashboard/admin/courses', label: 'All Courses', icon: BookOpen },
+  { href: '/dashboard/courses/new', label: 'Create Course', icon: PlusCircle },
   { href: '/dashboard/admin/analytics', label: 'Analytics', icon: BarChart3 },
   { href: '/dashboard/settings', label: 'Settings', icon: Settings },
 ]

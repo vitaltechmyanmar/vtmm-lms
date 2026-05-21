@@ -156,6 +156,23 @@ export async function getAllUsers() {
 
 export async function updateUserRole(userId: string, role: 'student' | 'instructor' | 'admin') {
   const supabase = await createClient()
+  
+  // Verify the current user is an admin
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    return { data: null, error: { message: 'Not authenticated' } }
+  }
+  
+  const { data: currentProfile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+  
+  if (currentProfile?.role !== 'admin') {
+    return { data: null, error: { message: 'Only administrators can change user roles' } }
+  }
+  
   const { data, error } = await supabase
     .from('profiles')
     .update({ role })

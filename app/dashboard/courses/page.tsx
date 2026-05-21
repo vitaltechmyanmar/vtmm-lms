@@ -23,35 +23,43 @@ export default async function InstructorCoursesPage() {
     .eq('id', user.id)
     .single()
 
+  // Only allow instructors and admins to view this page
   if (profile?.role !== 'instructor' && profile?.role !== 'admin') {
     redirect('/dashboard')
   }
 
-  const { data: courses } = await supabase
+  const isAdmin = profile?.role === 'admin'
+
+  // Admins see all courses, instructors see only their own
+  const query = supabase
     .from('courses')
     .select(`
       *,
       lessons(count),
       enrollments(count)
     `)
-    .eq('instructor_id', user.id)
-    .order('created_at', { ascending: false })
+  
+  const { data: courses } = isAdmin 
+    ? await query.order('created_at', { ascending: false })
+    : await query.eq('instructor_id', user.id).order('created_at', { ascending: false })
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">My Courses</h1>
+          <h1 className="text-3xl font-bold">{isAdmin ? 'All Courses' : 'My Courses'}</h1>
           <p className="text-muted-foreground">
-            Manage and create your courses
+            {isAdmin ? 'Manage all courses on the platform' : 'View and manage your courses'}
           </p>
         </div>
-        <Link href="/dashboard/courses/new">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Create Course
-          </Button>
-        </Link>
+        {isAdmin && (
+          <Link href="/dashboard/courses/new">
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              Create Course
+            </Button>
+          </Link>
+        )}
       </div>
 
       {courses && courses.length > 0 ? (
@@ -133,15 +141,20 @@ export default async function InstructorCoursesPage() {
           <CardContent>
             <BookOpen className="mx-auto h-12 w-12 text-muted-foreground" />
             <h3 className="mt-4 text-lg font-semibold">No courses yet</h3>
-            <p className="mb-4 text-muted-foreground">
-              Create your first course and start teaching students
+            <p className="text-muted-foreground">
+              {isAdmin 
+                ? 'No courses have been created on the platform yet.'
+                : 'You have no courses assigned to you.'
+              }
             </p>
-            <Link href="/dashboard/courses/new">
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                Create Your First Course
-              </Button>
-            </Link>
+            {isAdmin && (
+              <Link href="/dashboard/courses/new" className="mt-4 inline-block">
+                <Button>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Create Your First Course
+                </Button>
+              </Link>
+            )}
           </CardContent>
         </Card>
       )}
