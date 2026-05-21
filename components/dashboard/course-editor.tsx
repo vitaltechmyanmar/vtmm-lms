@@ -51,6 +51,8 @@ import {
 import { toast } from 'sonner'
 import Link from 'next/link'
 import { QuizBuilder } from '@/components/dashboard/quiz-builder'
+import { CourseCoverUpload } from '@/components/dashboard/course-cover-upload'
+import { formatMMK, parseMMK } from '@/lib/format-currency'
 import type { Course, Lesson, CourseLevel, Category } from '@/lib/types'
 
 interface CourseEditorProps {
@@ -78,7 +80,7 @@ export function CourseEditor({ course, isAdmin = false }: CourseEditorProps) {
   const [description, setDescription] = useState(course.description || '')
   const [category, setCategory] = useState(course.category || '')
   const [level, setLevel] = useState<CourseLevel>(course.level)
-  const [priceInCents, setPriceInCents] = useState((course.price_in_cents / 100).toString())
+  const [priceInCents, setPriceInCents] = useState(course.price_in_cents.toString())
   const [thumbnailUrl, setThumbnailUrl] = useState(course.thumbnail_url || '')
   const [language, setLanguage] = useState(course.language || 'English')
   const [isPublished, setIsPublished] = useState(course.is_published)
@@ -128,7 +130,7 @@ export function CourseEditor({ course, isAdmin = false }: CourseEditorProps) {
         description,
         category,
         level,
-        price_in_cents: Math.round(parseFloat(priceInCents || '0') * 100),
+        price_in_cents: parseMMK(priceInCents),
         thumbnail_url: thumbnailUrl || null,
         is_published: isPublished,
         language,
