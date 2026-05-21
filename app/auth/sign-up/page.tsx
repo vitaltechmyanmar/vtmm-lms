@@ -12,6 +12,8 @@ import { GraduationCap, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import type { UserRole } from '@/lib/types'
 
+export const dynamic = 'force-dynamic'
+
 export default function SignUpPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
