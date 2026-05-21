@@ -20,7 +20,8 @@ import {
   X,
 } from 'lucide-react'
 import { toast } from 'sonner'
-import type { Course, Lesson, Enrollment, LessonProgress } from '@/lib/types'
+import { QuizPlayer } from '@/components/quiz-player'
+import type { Course, Lesson, Enrollment, LessonProgress, Quiz, QuizQuestion, QuizAttempt } from '@/lib/types'
 
 interface CourseLearningViewProps {
   course: Course & { lessons: Lesson[] }
@@ -40,6 +41,8 @@ export function CourseLearningView({
     new Set(lessonProgress.filter(lp => lp.completed).map(lp => lp.lesson_id))
   )
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [quizData, setQuizData] = useState<Record<string, (Quiz & { questions: QuizQuestion[] }) | null>>({})
+  const [quizAttempts, setQuizAttempts] = useState<Record<string, QuizAttempt | null>>({})
   const router = useRouter()
   const supabase = createClient()
 
@@ -57,6 +60,42 @@ export function CourseLearningView({
       setCurrentLessonIndex(firstIncomplete)
     }
   }, [])
+
+  useEffect(() => {
+    async function fetchQuizForLesson() {
+      const lesson = course.lessons[currentLessonIndex]
+      if (!lesson || quizData[lesson.id] !== undefined) return
+
+      const { data: quiz } = await supabase
+        .from('quizzes')
+        .select('*, questions:quiz_questions(*)')
+        .eq('lesson_id', lesson.id)
+        .single()
+
+      if (quiz) {
+        const sorted = {
+          ...quiz,
+          questions: (quiz.questions || []).sort((a: QuizQuestion, b: QuizQuestion) => a.order_index - b.order_index),
+        }
+        setQuizData(prev => ({ ...prev, [lesson.id]: sorted }))
+
+        // Fetch latest attempt
+        const { data: attempt } = await supabase
+          .from('quiz_attempts')
+          .select('*')
+          .eq('user_id', userId)
+          .eq('quiz_id', quiz.id)
+          .order('attempted_at', { ascending: false })
+          .limit(1)
+          .single()
+
+        setQuizAttempts(prev => ({ ...prev, [lesson.id]: attempt || null }))
+      } else {
+        setQuizData(prev => ({ ...prev, [lesson.id]: null }))
+      }
+    }
+    fetchQuizForLesson()
+  }, [currentLessonIndex])
 
   async function markLessonComplete(lessonId: string) {
     if (completedLessons.has(lessonId)) return
@@ -87,10 +126,15 @@ export function CourseLearningView({
 
     toast.success('Lesson completed!')
 
-    // Check if course is complete
+    // Check if course is complete — auto-issue certificate
     if (newCompleted.size === course.lessons.length) {
       toast.success('Congratulations! You completed the course!')
-      // Could trigger certificate generation here
+      const certNumber = `VT-${Date.now().toString(36).toUpperCase()}`
+      await supabase.from('certificates').upsert(
+        { user_id: userId, course_id: course.id, certificate_number: certNumber },
+        { onConflict: 'user_id,course_id', ignoreDuplicates: true }
+      )
+      router.push('/dashboard/certificates')
     }
   }
 
@@ -255,6 +299,17 @@ export function CourseLearningView({
                     </div>
                   </CardContent>
                 </Card>
+              )}
+
+              {/* Quiz */}
+              {quizData[currentLesson.id] && (
+                <div className="mb-6">
+                  <QuizPlayer
+                    quiz={quizData[currentLesson.id]!}
+                    userId={userId}
+                    previousAttempt={quizAttempts[currentLesson.id]}
+                  />
+                </div>
               )}
 
               {/* Navigation */}

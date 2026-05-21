@@ -46,9 +46,11 @@ import {
   Tag,
   BookOpen,
   ListChecks,
+  ClipboardList,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import Link from 'next/link'
+import { QuizBuilder } from '@/components/dashboard/quiz-builder'
 import type { Course, Lesson, CourseLevel, Category } from '@/lib/types'
 
 interface CourseEditorProps {
@@ -114,6 +116,7 @@ export function CourseEditor({ course, isAdmin = false }: CourseEditorProps) {
   const [isLessonDialogOpen, setIsLessonDialogOpen] = useState(false)
   const [editingLesson, setEditingLesson] = useState<Lesson | null>(null)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [openQuizLessonId, setOpenQuizLessonId] = useState<string | null>(null)
 
   // ---- Course save ----
   async function handleSaveCourse() {
@@ -561,8 +564,9 @@ export function CourseEditor({ course, isAdmin = false }: CourseEditorProps) {
                   {lessons.map((lesson, index) => (
                     <div
                       key={lesson.id}
-                      className="flex items-center gap-3 rounded-lg border bg-card p-4"
+                      className="rounded-lg border bg-card"
                     >
+                    <div className="flex items-center gap-3 p-4">
                       <GripVertical className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
                       <div className="flex w-8 flex-shrink-0 flex-col gap-0.5">
                         <button
@@ -674,6 +678,30 @@ export function CourseEditor({ course, isAdmin = false }: CourseEditorProps) {
                           </AlertDialogFooter>
                         </AlertDialogContent>
                       </AlertDialog>
+                      {/* Quiz toggle */}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        title="Manage quiz"
+                        onClick={() =>
+                          setOpenQuizLessonId(
+                            openQuizLessonId === lesson.id ? null : lesson.id
+                          )
+                        }
+                        className={openQuizLessonId === lesson.id ? 'text-primary' : ''}
+                      >
+                        <ClipboardList className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    {/* Quiz panel */}
+                    {openQuizLessonId === lesson.id && (
+                      <div className="border-t px-4 pb-4 pt-3">
+                        <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                          Quiz for: {lesson.title}
+                        </p>
+                        <QuizBuilder lessonId={lesson.id} lessonTitle={lesson.title} />
+                      </div>
+                    )}
                     </div>
                   ))}
                 </div>
