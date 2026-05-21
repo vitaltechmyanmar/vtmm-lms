@@ -11,8 +11,8 @@ export const metadata: Metadata = {
   title: 'Vital Tech LearnHub - Online Learning Platform',
   description: 'Master new skills with expert-led courses. Join thousands of learners on Vital Tech LearnHub.',
   icons: {
-    icon: '/icon.svg',
-    apple: '/apple-icon.png',
+    icon: '/vitaltech_logo.ico',
+    apple: '/vitaltech_logo.png',
   },
 }
 
