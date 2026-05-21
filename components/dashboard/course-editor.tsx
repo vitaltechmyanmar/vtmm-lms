@@ -284,11 +284,11 @@ export function CourseEditor({ course }: CourseEditorProps) {
                     Add Lesson
                   </Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle>Add New Lesson</DialogTitle>
                     <DialogDescription>
-                      Create a new lesson for your course
+                      Create a new lesson with video and text content
                     </DialogDescription>
                   </DialogHeader>
                   <LessonForm onSubmit={handleAddLesson} onCancel={() => setIsLessonDialogOpen(false)} />
@@ -332,9 +332,12 @@ export function CourseEditor({ course }: CourseEditorProps) {
                             Edit
                           </Button>
                         </DialogTrigger>
-                        <DialogContent>
+                        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
                           <DialogHeader>
                             <DialogTitle>Edit Lesson</DialogTitle>
+                            <DialogDescription>
+                              Update lesson content and video
+                            </DialogDescription>
                           </DialogHeader>
                           <LessonForm
                             lesson={lesson}
@@ -377,12 +380,33 @@ interface LessonFormProps {
   onCancel: () => void
 }
 
+function getYouTubeEmbedUrl(url: string): string | null {
+  if (!url) return null
+  const match = url.match(
+    /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/
+  )
+  return match ? `https://www.youtube.com/embed/${match[1]}` : null
+}
+
+function getVimeoEmbedUrl(url: string): string | null {
+  if (!url) return null
+  const match = url.match(/vimeo\.com\/(\d+)/)
+  return match ? `https://player.vimeo.com/video/${match[1]}` : null
+}
+
+function getEmbedUrl(url: string): string | null {
+  if (!url) return null
+  return getYouTubeEmbedUrl(url) || getVimeoEmbedUrl(url)
+}
+
 function LessonForm({ lesson, onSubmit, onCancel }: LessonFormProps) {
   const [title, setTitle] = useState(lesson?.title || '')
   const [content, setContent] = useState(lesson?.content || '')
   const [videoUrl, setVideoUrl] = useState(lesson?.video_url || '')
   const [durationMinutes, setDurationMinutes] = useState(lesson?.duration_minutes?.toString() || '')
   const [isLoading, setIsLoading] = useState(false)
+
+  const embedUrl = getEmbedUrl(videoUrl)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -404,29 +428,61 @@ function LessonForm({ lesson, onSubmit, onCancel }: LessonFormProps) {
           id="lessonTitle"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
+          placeholder="Introduction to the topic"
           required
         />
       </div>
+
       <div className="space-y-2">
-        <Label htmlFor="lessonContent">Content</Label>
-        <Textarea
-          id="lessonContent"
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          rows={4}
-          placeholder="Lesson content (supports markdown)"
-        />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="videoUrl">Video URL (YouTube/Vimeo)</Label>
+        <Label htmlFor="videoUrl">YouTube Video Link</Label>
         <Input
           id="videoUrl"
           type="url"
           value={videoUrl}
           onChange={(e) => setVideoUrl(e.target.value)}
-          placeholder="https://www.youtube.com/watch?v=..."
+          placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
         />
+        <p className="text-xs text-muted-foreground">
+          Paste a YouTube or Vimeo link to embed the video
+        </p>
+        
+        {/* YouTube Video Preview */}
+        {embedUrl && (
+          <div className="mt-3 overflow-hidden rounded-lg border bg-black">
+            <div className="aspect-video">
+              <iframe
+                src={embedUrl}
+                className="h-full w-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                title="Video preview"
+              />
+            </div>
+          </div>
+        )}
+        
+        {videoUrl && !embedUrl && (
+          <p className="mt-2 text-sm text-destructive">
+            Invalid video URL. Please use a YouTube or Vimeo link.
+          </p>
+        )}
       </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="lessonContent">Text Content</Label>
+        <Textarea
+          id="lessonContent"
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          rows={6}
+          placeholder="Write your lesson content here. You can explain concepts, provide instructions, or add supplementary material to complement the video."
+          className="min-h-[150px] resize-y"
+        />
+        <p className="text-xs text-muted-foreground">
+          Add written content to accompany the video lesson
+        </p>
+      </div>
+
       <div className="space-y-2">
         <Label htmlFor="duration">Duration (minutes)</Label>
         <Input
@@ -435,10 +491,12 @@ function LessonForm({ lesson, onSubmit, onCancel }: LessonFormProps) {
           min="0"
           value={durationMinutes}
           onChange={(e) => setDurationMinutes(e.target.value)}
+          placeholder="10"
         />
       </div>
-      <div className="flex gap-2">
-        <Button type="submit" disabled={isLoading}>
+
+      <div className="flex gap-2 pt-2">
+        <Button type="submit" disabled={isLoading || !title.trim()}>
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
