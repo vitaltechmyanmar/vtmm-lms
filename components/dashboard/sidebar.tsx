@@ -5,7 +5,6 @@ import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import type { Profile } from '@/lib/types'
 import {
-  GraduationCap,
   LayoutDashboard,
   BookOpen,
   Award,
@@ -68,9 +67,7 @@ export function DashboardSidebar({ profile }: DashboardSidebarProps) {
     <aside className="fixed inset-y-0 left-0 z-50 hidden w-64 flex-col border-r bg-card lg:flex">
       <div className="flex h-16 items-center gap-2 border-b px-6">
         <Link href="/" className="flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-            <GraduationCap className="h-5 w-5 text-primary-foreground" />
-          </div>
+          <img src="/vitaltech_logo.png" alt="Vital Tech LearnHub" className="h-9 w-9" />
           <span className="text-xl font-bold">Vital Tech</span>
         </Link>
       </div>

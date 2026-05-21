@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { GraduationCap, Loader2 } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import type { UserRole } from '@/lib/types'
 
@@ -56,9 +56,7 @@ export default function SignUpPage() {
       <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
         <Card className="w-full max-w-md">
           <CardHeader className="space-y-2 text-center">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary">
-              <GraduationCap className="h-6 w-6 text-primary-foreground" />
-            </div>
+            <img src="/vitaltech_logo.png" alt="Vital Tech LearnHub" className="mx-auto h-12 w-12" />
             <CardTitle className="text-2xl font-bold">Check your email</CardTitle>
             <CardDescription>
               {"We've sent you a confirmation link to"} <strong>{email}</strong>. 
@@ -81,12 +79,10 @@ export default function SignUpPage() {
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-2 text-center">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary">
-            <GraduationCap className="h-6 w-6 text-primary-foreground" />
-          </div>
+          <img src="/vitaltech_logo.png" alt="Vital Tech LearnHub" className="mx-auto h-12 w-12" />
           <CardTitle className="text-2xl font-bold">Create an account</CardTitle>
           <CardDescription>
-            Join LearnHub and start your learning journey
+            Join Vital Tech LearnHub and start your learning journey
           </CardDescription>
         </CardHeader>
         <CardContent>
