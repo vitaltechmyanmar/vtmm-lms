@@ -52,14 +52,12 @@ export default async function InstructorCoursesPage() {
             {isAdmin ? 'Manage all courses on the platform' : 'View and manage your courses'}
           </p>
         </div>
-        {isAdmin && (
-          <Link href="/dashboard/courses/new">
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Create Course
-            </Button>
-          </Link>
-        )}
+        <Link href="/dashboard/courses/new">
+          <Button>
+            <Plus className="mr-2 h-4 w-4" />
+            Create Course
+          </Button>
+        </Link>
       </div>
 
       {courses && courses.length > 0 ? (
@@ -142,19 +140,16 @@ export default async function InstructorCoursesPage() {
             <BookOpen className="mx-auto h-12 w-12 text-muted-foreground" />
             <h3 className="mt-4 text-lg font-semibold">No courses yet</h3>
             <p className="text-muted-foreground">
-              {isAdmin 
+              {isAdmin
                 ? 'No courses have been created on the platform yet.'
-                : 'You have no courses assigned to you.'
-              }
+                : 'You have not created any courses yet.'}
             </p>
-            {isAdmin && (
-              <Link href="/dashboard/courses/new" className="mt-4 inline-block">
-                <Button>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Create Your First Course
-                </Button>
-              </Link>
-            )}
+            <Link href="/dashboard/courses/new" className="mt-4 inline-block">
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                Create Your First Course
+              </Button>
+            </Link>
           </CardContent>
         </Card>
       )}

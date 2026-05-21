@@ -14,7 +14,7 @@ import { toast } from 'sonner'
 import Link from 'next/link'
 import type { CourseLevel } from '@/lib/types'
 
-const categories = [
+const CATEGORIES = [
   'Programming',
   'Design',
   'Business',
@@ -23,6 +23,10 @@ const categories = [
   'Music',
   'Health',
   'Language',
+  'Data Science',
+  'DevOps',
+  'Mobile Development',
+  'Cybersecurity',
   'Other',
 ]
 
@@ -39,7 +43,6 @@ export default function NewCoursePage() {
   const router = useRouter()
   const supabase = createClient()
 
-  // Check if user is admin
   useEffect(() => {
     async function checkAuth() {
       const { data: { user } } = await supabase.auth.getUser()
@@ -54,8 +57,8 @@ export default function NewCoursePage() {
         .eq('id', user.id)
         .single()
 
-      if (profile?.role !== 'admin') {
-        toast.error('Only administrators can create courses')
+      if (profile?.role !== 'admin' && profile?.role !== 'instructor') {
+        toast.error('Only instructors and administrators can create courses')
         router.push('/dashboard')
         return
       }
@@ -78,15 +81,14 @@ export default function NewCoursePage() {
       return
     }
 
-    // Double-check admin role
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
       .eq('id', user.id)
       .single()
 
-    if (profile?.role !== 'admin') {
-      toast.error('Only administrators can create courses')
+    if (profile?.role !== 'admin' && profile?.role !== 'instructor') {
+      toast.error('Only instructors and administrators can create courses')
       setIsLoading(false)
       router.push('/dashboard')
       return
@@ -97,12 +99,16 @@ export default function NewCoursePage() {
       .insert({
         title,
         description,
-        category,
+        category: category || null,
         level,
         price_in_cents: Math.round(parseFloat(priceInCents || '0') * 100),
         thumbnail_url: thumbnailUrl || null,
         instructor_id: user.id,
         is_published: false,
+        what_you_will_learn: [],
+        requirements: [],
+        tags: [],
+        language: 'English',
       })
       .select('id')
       .single()
@@ -113,21 +119,19 @@ export default function NewCoursePage() {
       return
     }
 
-    toast.success('Course created successfully!')
+    toast.success('Course created!')
     router.push(`/dashboard/courses/${data.id}`)
   }
 
   if (checkingAuth) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex min-h-[400px] items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     )
   }
 
-  if (!isAuthorized) {
-    return null
-  }
+  if (!isAuthorized) return null
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
@@ -139,9 +143,7 @@ export default function NewCoursePage() {
         </Link>
         <div>
           <h1 className="text-3xl font-bold">Create New Course</h1>
-          <p className="text-muted-foreground">
-            Fill in the details to create your course
-          </p>
+          <p className="text-muted-foreground">Fill in the basic details to get started</p>
         </div>
       </div>
 
@@ -149,18 +151,18 @@ export default function NewCoursePage() {
         <CardHeader>
           <CardTitle>Course Details</CardTitle>
           <CardDescription>
-            Basic information about your course
+            You can add more content, lessons, and settings after creating the course
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
               <Label htmlFor="title">Course Title *</Label>
               <Input
                 id="title"
-                placeholder="e.g., Complete Web Development Bootcamp"
+                placeholder="e.g. Complete Web Development Bootcamp"
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                onChange={e => setTitle(e.target.value)}
                 required
                 disabled={isLoading}
               />
@@ -170,9 +172,9 @@ export default function NewCoursePage() {
               <Label htmlFor="description">Description</Label>
               <Textarea
                 id="description"
-                placeholder="Describe what students will learn in this course..."
+                placeholder="What will students learn in this course?"
                 value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                onChange={e => setDescription(e.target.value)}
                 rows={4}
                 disabled={isLoading}
               />
@@ -180,13 +182,13 @@ export default function NewCoursePage() {
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="category">Category</Label>
+                <Label>Category</Label>
                 <Select value={category} onValueChange={setCategory} disabled={isLoading}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent>
-                    {categories.map((cat) => (
+                    {CATEGORIES.map(cat => (
                       <SelectItem key={cat} value={cat.toLowerCase()}>
                         {cat}
                       </SelectItem>
@@ -196,10 +198,10 @@ export default function NewCoursePage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="level">Difficulty Level</Label>
-                <Select value={level} onValueChange={(v) => setLevel(v as CourseLevel)} disabled={isLoading}>
+                <Label>Difficulty Level</Label>
+                <Select value={level} onValueChange={v => setLevel(v as CourseLevel)} disabled={isLoading}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select level" />
+                    <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="beginner">Beginner</SelectItem>
@@ -210,37 +212,37 @@ export default function NewCoursePage() {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="price">Price (USD)</Label>
-              <Input
-                id="price"
-                type="number"
-                min="0"
-                step="0.01"
-                placeholder="0.00"
-                value={priceInCents}
-                onChange={(e) => setPriceInCents(e.target.value)}
-                disabled={isLoading}
-              />
-              <p className="text-xs text-muted-foreground">
-                Leave empty or 0 for a free course
-              </p>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="price">Price (USD)</Label>
+                <Input
+                  id="price"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="0.00"
+                  value={priceInCents}
+                  onChange={e => setPriceInCents(e.target.value)}
+                  disabled={isLoading}
+                />
+                <p className="text-xs text-muted-foreground">Leave empty for a free course</p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="thumbnail">Thumbnail URL</Label>
+                <Input
+                  id="thumbnail"
+                  type="url"
+                  placeholder="https://example.com/image.jpg"
+                  value={thumbnailUrl}
+                  onChange={e => setThumbnailUrl(e.target.value)}
+                  disabled={isLoading}
+                />
+              </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="thumbnail">Thumbnail URL</Label>
-              <Input
-                id="thumbnail"
-                type="url"
-                placeholder="https://example.com/image.jpg"
-                value={thumbnailUrl}
-                onChange={(e) => setThumbnailUrl(e.target.value)}
-                disabled={isLoading}
-              />
-            </div>
-
-            <div className="flex gap-4">
-              <Button type="submit" disabled={isLoading}>
+            <div className="flex gap-3 pt-2">
+              <Button type="submit" disabled={isLoading || !title.trim()}>
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
