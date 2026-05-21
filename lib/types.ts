@@ -24,6 +24,10 @@ export interface Course {
   level: CourseLevel
   price_in_cents: number
   is_published: boolean
+  what_you_will_learn: string[]
+  requirements: string[]
+  language: string
+  tags: string[]
   created_at: string
   updated_at: string
   instructor?: Profile
