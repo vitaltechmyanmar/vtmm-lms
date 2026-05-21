@@ -2,6 +2,15 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function updateSession(request: NextRequest) {
+  // Skip Supabase initialization for paths that don't require auth verification
+  const pathname = request.nextUrl.pathname
+  const publicPaths = ['/auth/login', '/auth/sign-up', '/auth/error', '/auth/callback', '/', '/about', '/courses']
+  const isPublicPath = publicPaths.some(path => pathname.startsWith(path))
+  
+  if (isPublicPath) {
+    return NextResponse.next({ request })
+  }
+
   let supabaseResponse = NextResponse.next({
     request,
   })

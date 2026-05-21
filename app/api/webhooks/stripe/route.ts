@@ -1,15 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { stripe } from '@/lib/stripe'
-import { createClient } from '@supabase/supabase-js'
 import Stripe from 'stripe'
 
-// Use admin client to bypass RLS for webhook operations
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+// Mark route as dynamic to prevent build-time evaluation
+export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
+  // Lazy load modules to avoid build-time initialization
+  const { stripe } = await import('@/lib/stripe')
+  const { createClient } = await import('@supabase/supabase-js')
+
+  // Use admin client to bypass RLS for webhook operations
+  const supabaseAdmin = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+
   const body = await request.text()
   const signature = request.headers.get('stripe-signature')
 

@@ -83,8 +83,8 @@ export async function createCourseCheckoutSession(courseId: string) {
       },
     ],
     mode: 'payment',
-    success_url: `${origin}/courses/${courseId}/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${origin}/courses/${courseId}`,
+    ui_mode: 'embedded',
+    return_url: `${origin}/courses/${courseId}/success?session_id={CHECKOUT_SESSION_ID}`,
     metadata: {
       course_id: courseId,
       user_id: user.id,
