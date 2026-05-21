@@ -1,9 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { LogOut, Mail, Edit2 } from 'lucide-react'
+import { LogOut } from 'lucide-react'
+import { ProfileEditForm } from '@/components/profile-edit-form'
 
 export default async function SettingsPage() {
   const supabase = await createClient()
@@ -35,46 +35,51 @@ export default async function SettingsPage() {
         </p>
       </div>
 
-      {/* Profile Settings */}
+      {/* Profile Edit Form */}
       <Card>
         <CardHeader>
           <CardTitle>Profile Information</CardTitle>
+          <CardDescription>
+            Update your account details. Email changes require re-verification.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ProfileEditForm 
+            userId={user.id}
+            currentEmail={user.email || ''}
+            currentFullName={profile?.full_name || ''}
+          />
+        </CardContent>
+      </Card>
+
+      {/* Account Info (Read Only) */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Account Information</CardTitle>
+          <CardDescription>
+            Your account role and status
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <label className="text-sm font-medium">Email</label>
-            <div className="mt-1 flex items-center gap-2">
-              <Input
-                type="email"
-                value={user.email || ''}
-                disabled
-                className="flex-1"
-              />
-              <Mail className="h-5 w-5 text-muted-foreground" />
-            </div>
-          </div>
-          <div>
-            <label className="text-sm font-medium">Full Name</label>
-            <Input
-              type="text"
-              value={profile?.full_name || ''}
-              disabled
-              className="mt-1"
-            />
-          </div>
-          <div>
             <label className="text-sm font-medium">Role</label>
-            <Input
-              type="text"
-              value={profile?.role || ''}
-              disabled
-              className="mt-1 capitalize"
-            />
+            <p className="mt-1 text-sm text-muted-foreground capitalize">
+              {profile?.role || 'student'}
+            </p>
           </div>
-          <Button className="w-full" disabled>
-            <Edit2 className="mr-2 h-4 w-4" />
-            Edit Profile (Coming Soon)
-          </Button>
+          <div>
+            <label className="text-sm font-medium">Member Since</label>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {profile?.created_at 
+                ? new Date(profile.created_at).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                  })
+                : 'Unknown'
+              }
+            </p>
+          </div>
         </CardContent>
       </Card>
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -34,8 +34,38 @@ export default function NewCoursePage() {
   const [priceInCents, setPriceInCents] = useState('')
   const [thumbnailUrl, setThumbnailUrl] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [isAuthorized, setIsAuthorized] = useState(false)
+  const [checkingAuth, setCheckingAuth] = useState(true)
   const router = useRouter()
   const supabase = createClient()
+
+  // Check if user is admin
+  useEffect(() => {
+    async function checkAuth() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        router.push('/auth/login')
+        return
+      }
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+
+      if (profile?.role !== 'admin') {
+        toast.error('Only administrators can create courses')
+        router.push('/dashboard')
+        return
+      }
+
+      setIsAuthorized(true)
+      setCheckingAuth(false)
+    }
+
+    checkAuth()
+  }, [supabase, router])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -45,6 +75,20 @@ export default function NewCoursePage() {
     if (!user) {
       toast.error('You must be logged in')
       setIsLoading(false)
+      return
+    }
+
+    // Double-check admin role
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    if (profile?.role !== 'admin') {
+      toast.error('Only administrators can create courses')
+      setIsLoading(false)
+      router.push('/dashboard')
       return
     }
 
@@ -71,6 +115,18 @@ export default function NewCoursePage() {
 
     toast.success('Course created successfully!')
     router.push(`/dashboard/courses/${data.id}`)
+  }
+
+  if (checkingAuth) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    )
+  }
+
+  if (!isAuthorized) {
+    return null
   }
 
   return (
