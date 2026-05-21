@@ -138,3 +138,30 @@ export interface DiscussionReply {
   created_at: string
   user?: Profile
 }
+
+export interface Category {
+  id: string
+  name: string
+  slug: string
+  description: string | null
+  icon: string | null
+  color: string
+  is_active: boolean
+  order_index: number
+  created_at: string
+  updated_at: string
+  courses_count?: number
+}
+
+export interface UserCourseAssignment {
+  id: string
+  user_id: string
+  course_id: string
+  assigned_by: string | null
+  assigned_at: string
+  expires_at: string | null
+  notes: string | null
+  user?: Profile
+  course?: Course
+  assigned_by_user?: Profile
+}

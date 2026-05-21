@@ -16,6 +16,8 @@ import {
   PlusCircle,
   ShoppingBag,
   UserCheck,
+  FolderTree,
+  UserPlus,
 } from 'lucide-react'
 
 interface DashboardSidebarProps {
@@ -44,6 +46,8 @@ const adminNavItems = [
   { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
   { href: '/dashboard/admin/users', label: 'Users', icon: Users },
   { href: '/dashboard/admin/courses', label: 'All Courses', icon: BookOpen },
+  { href: '/dashboard/admin/categories', label: 'Categories', icon: FolderTree },
+  { href: '/dashboard/admin/assignments', label: 'Assignments', icon: UserPlus },
   { href: '/dashboard/courses/new', label: 'Create Course', icon: PlusCircle },
   { href: '/dashboard/admin/analytics', label: 'Analytics', icon: BarChart3 },
   { href: '/dashboard/discussions', label: 'Discussions', icon: MessageSquare },
@@ -67,7 +71,7 @@ export function DashboardSidebar({ profile }: DashboardSidebarProps) {
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
             <GraduationCap className="h-5 w-5 text-primary-foreground" />
           </div>
-          <span className="text-xl font-bold">LearnHub</span>
+          <span className="text-xl font-bold">Vital Tech</span>
         </Link>
       </div>
       <nav className="flex-1 space-y-1 p-4">

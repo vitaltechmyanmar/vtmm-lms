@@ -8,8 +8,8 @@ const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'LearnHub - Online Learning Platform',
-  description: 'Master new skills with expert-led courses. Join thousands of learners on LearnHub.',
+  title: 'Vital Tech LearnHub - Online Learning Platform',
+  description: 'Master new skills with expert-led courses. Join thousands of learners on Vital Tech LearnHub.',
   icons: {
     icon: '/icon.svg',
     apple: '/apple-icon.png',

@@ -16,7 +16,7 @@ export default async function HomePage() {
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
               <GraduationCap className="h-5 w-5 text-primary-foreground" />
             </div>
-            <span className="text-xl font-bold">LearnHub</span>
+            <span className="text-xl font-bold">Vital Tech LearnHub</span>
           </Link>
           <nav className="hidden items-center gap-6 md:flex">
             <Link href="/courses" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
@@ -58,7 +58,7 @@ export default async function HomePage() {
             </h1>
             <p className="mb-8 text-pretty text-lg text-muted-foreground md:text-xl">
               Master new skills with expert-led courses. Whether you want to advance your career 
-              or explore new interests, LearnHub has something for everyone.
+              or explore new interests, Vital Tech LearnHub has something for everyone.
             </p>
             <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
               <Link href="/auth/sign-up">
@@ -149,7 +149,7 @@ export default async function HomePage() {
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="mb-4 text-3xl font-bold">Ready to start learning?</h2>
             <p className="mb-8 text-muted-foreground">
-              Join thousands of learners who are already advancing their careers with LearnHub.
+              Join thousands of learners who are already advancing their careers with Vital Tech LearnHub.
             </p>
             <Link href="/auth/sign-up">
               <Button size="lg">
@@ -169,10 +169,10 @@ export default async function HomePage() {
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
                 <GraduationCap className="h-4 w-4 text-primary-foreground" />
               </div>
-              <span className="font-semibold">LearnHub</span>
+              <span className="font-semibold">Vital Tech LearnHub</span>
             </div>
             <p className="text-sm text-muted-foreground">
-              &copy; {new Date().getFullYear()} LearnHub. All rights reserved.
+              &copy; {new Date().getFullYear()} Vital Tech LearnHub. All rights reserved.
             </p>
           </div>
         </div>
