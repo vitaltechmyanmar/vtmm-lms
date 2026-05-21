@@ -69,11 +69,9 @@ export default function NewCoursePage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    console.log('[v0] handleSubmit called, title:', title)
     setIsLoading(true)
 
     const { data: { user } } = await supabase.auth.getUser()
-    console.log('[v0] user:', user?.id)
     if (!user) {
       toast.error('You must be logged in')
       setIsLoading(false)
@@ -87,7 +85,6 @@ export default function NewCoursePage() {
       .eq('id', user.id)
       .single()
 
-    console.log('[v0] profile role:', profile?.role)
     if (profile?.role !== 'admin') {
       toast.error('Only administrators can create courses')
       setIsLoading(false)
@@ -95,7 +92,6 @@ export default function NewCoursePage() {
       return
     }
 
-    console.log('[v0] inserting course...')
     const { data, error } = await supabase
       .from('courses')
       .insert({
@@ -111,7 +107,6 @@ export default function NewCoursePage() {
       .select('id')
       .single()
 
-    console.log('[v0] insert result:', { data, error })
     if (error) {
       toast.error(error.message)
       setIsLoading(false)

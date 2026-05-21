@@ -83,29 +83,33 @@ export function CourseEditor({ course }: CourseEditorProps) {
   }
 
   async function handleAddLesson(lessonData: Partial<Lesson>) {
-    console.log('[v0] handleAddLesson called with:', lessonData)
-    const { data, error } = await supabase
-      .from('lessons')
-      .insert({
-        course_id: course.id,
-        title: lessonData.title,
-        content: lessonData.content,
-        video_url: lessonData.video_url,
-        duration_minutes: lessonData.duration_minutes || 0,
-        order_index: lessons.length,
-      })
-      .select()
-      .single()
+    try {
+      const { data, error } = await supabase
+        .from('lessons')
+        .insert({
+          course_id: course.id,
+          title: lessonData.title,
+          content: lessonData.content,
+          video_url: lessonData.video_url,
+          duration_minutes: lessonData.duration_minutes || 0,
+          order_index: lessons.length,
+        })
+        .select()
+        .single()
 
-    console.log('[v0] lesson insert result:', { data, error })
-    if (error) {
-      toast.error(error.message)
-      return
+      if (error) {
+        toast.error(error.message)
+        return
+      }
+
+      setLessons([...lessons, data])
+      toast.success('Lesson added!')
+    } catch (err) {
+      console.error('lesson add error:', err)
+      toast.error('Failed to add lesson')
+    } finally {
+      setIsLessonDialogOpen(false)
     }
-
-    setLessons([...lessons, data])
-    setIsLessonDialogOpen(false)
-    toast.success('Lesson added!')
   }
 
   async function handleUpdateLesson(lessonId: string, lessonData: Partial<Lesson>) {
@@ -412,7 +416,6 @@ function LessonForm({ lesson, onSubmit, onCancel }: LessonFormProps) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    console.log('[v0] LessonForm handleSubmit called, title:', title)
     setIsLoading(true)
     await onSubmit({
       title,
