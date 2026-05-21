@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -49,28 +49,12 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import Link from 'next/link'
-import type { Course, Lesson, CourseLevel } from '@/lib/types'
+import type { Course, Lesson, CourseLevel, Category } from '@/lib/types'
 
 interface CourseEditorProps {
   course: Course & { lessons: Lesson[] }
   isAdmin?: boolean
 }
-
-const CATEGORIES = [
-  'Programming',
-  'Design',
-  'Business',
-  'Marketing',
-  'Photography',
-  'Music',
-  'Health',
-  'Language',
-  'Data Science',
-  'DevOps',
-  'Mobile Development',
-  'Cybersecurity',
-  'Other',
-]
 
 const LANGUAGES = [
   'English',
@@ -97,6 +81,23 @@ export function CourseEditor({ course, isAdmin = false }: CourseEditorProps) {
   const [language, setLanguage] = useState(course.language || 'English')
   const [isPublished, setIsPublished] = useState(course.is_published)
   const [isSaving, setIsSaving] = useState(false)
+  const [categories, setCategories] = useState<Category[]>([])
+
+  const router = useRouter()
+  const supabase = createClient()
+
+  // Fetch categories on mount
+  useEffect(() => {
+    async function fetchCategories() {
+      const { data } = await supabase
+        .from('categories')
+        .select('*')
+        .eq('is_active', true)
+        .order('order_index', { ascending: true })
+      setCategories(data || [])
+    }
+    fetchCategories()
+  }, [supabase])
 
   // Learning outcomes & requirements
   const [objectives, setObjectives] = useState<string[]>(course.what_you_will_learn || [])
@@ -113,9 +114,6 @@ export function CourseEditor({ course, isAdmin = false }: CourseEditorProps) {
   const [isLessonDialogOpen, setIsLessonDialogOpen] = useState(false)
   const [editingLesson, setEditingLesson] = useState<Lesson | null>(null)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
-
-  const router = useRouter()
-  const supabase = createClient()
 
   // ---- Course save ----
   async function handleSaveCourse() {
@@ -434,11 +432,21 @@ export function CourseEditor({ course, isAdmin = false }: CourseEditorProps) {
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
                     <SelectContent>
-                      {CATEGORIES.map(cat => (
-                        <SelectItem key={cat} value={cat.toLowerCase()}>
-                          {cat}
-                        </SelectItem>
-                      ))}
+                      {categories.length > 0 ? (
+                        categories.map(cat => (
+                          <SelectItem key={cat.id} value={cat.name}>
+                            {cat.name}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <>
+                          <SelectItem value="Programming">Programming</SelectItem>
+                          <SelectItem value="Design">Design</SelectItem>
+                          <SelectItem value="Business">Business</SelectItem>
+                          <SelectItem value="Data Science">Data Science</SelectItem>
+                          <SelectItem value="Other">Other</SelectItem>
+                        </>
+                      )}
                     </SelectContent>
                   </Select>
                 </div>

@@ -12,23 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Loader2, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import Link from 'next/link'
-import type { CourseLevel } from '@/lib/types'
-
-const CATEGORIES = [
-  'Programming',
-  'Design',
-  'Business',
-  'Marketing',
-  'Photography',
-  'Music',
-  'Health',
-  'Language',
-  'Data Science',
-  'DevOps',
-  'Mobile Development',
-  'Cybersecurity',
-  'Other',
-]
+import type { CourseLevel, Category } from '@/lib/types'
 
 export default function NewCoursePage() {
   const [title, setTitle] = useState('')
@@ -40,6 +24,7 @@ export default function NewCoursePage() {
   const [isLoading, setIsLoading] = useState(false)
   const [isAuthorized, setIsAuthorized] = useState(false)
   const [checkingAuth, setCheckingAuth] = useState(true)
+  const [categories, setCategories] = useState<Category[]>([])
   const router = useRouter()
   const supabase = createClient()
 
@@ -63,6 +48,14 @@ export default function NewCoursePage() {
         return
       }
 
+      // Fetch categories
+      const { data: cats } = await supabase
+        .from('categories')
+        .select('*')
+        .eq('is_active', true)
+        .order('order_index', { ascending: true })
+
+      setCategories(cats || [])
       setIsAuthorized(true)
       setCheckingAuth(false)
     }
@@ -188,11 +181,22 @@ export default function NewCoursePage() {
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent>
-                    {CATEGORIES.map(cat => (
-                      <SelectItem key={cat} value={cat.toLowerCase()}>
-                        {cat}
-                      </SelectItem>
-                    ))}
+                    {categories.length > 0 ? (
+                      categories.map(cat => (
+                        <SelectItem key={cat.id} value={cat.name}>
+                          {cat.name}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <>
+                        <SelectItem value="Programming">Programming</SelectItem>
+                        <SelectItem value="Design">Design</SelectItem>
+                        <SelectItem value="Business">Business</SelectItem>
+                        <SelectItem value="Marketing">Marketing</SelectItem>
+                        <SelectItem value="Data Science">Data Science</SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
+                      </>
+                    )}
                   </SelectContent>
                 </Select>
               </div>
