@@ -4,11 +4,12 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { CourseCheckout } from '@/components/checkout'
+import { MyanmarPaymentCheckout } from '@/components/checkout'
 import {
   Dialog,
   DialogContent,
-  DialogTrigger,
+  DialogHeader,
+  DialogTitle,
 } from '@/components/ui/dialog'
 import { Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
@@ -69,6 +70,7 @@ export function CourseEnrollButton({
     router.refresh()
   }
 
+  // Already enrolled
   if (isEnrolled) {
     return (
       <Link href={`/courses/${courseId}/learn`}>
@@ -79,6 +81,7 @@ export function CourseEnrollButton({
     )
   }
 
+  // Not logged in
   if (!isLoggedIn) {
     return (
       <Link href={`/auth/login?redirect=/courses/${courseId}`}>
@@ -89,11 +92,12 @@ export function CourseEnrollButton({
     )
   }
 
+  // Free course — direct enroll
   if (priceInCents === 0) {
     return (
-      <Button 
-        className="w-full" 
-        size="lg" 
+      <Button
+        className="w-full"
+        size="lg"
         onClick={handleFreeEnroll}
         disabled={isEnrolling}
       >
@@ -109,20 +113,34 @@ export function CourseEnrollButton({
     )
   }
 
+  // Paid course — Myanmar payment dialog
   return (
-    <Dialog open={isCheckoutOpen} onOpenChange={setIsCheckoutOpen}>
-      <DialogTrigger asChild>
-        <Button className="w-full" size="lg">
-          Enroll Now
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-2xl">
-        <CourseCheckout
-          courseId={courseId}
-          courseName={courseName}
-          onCancel={() => setIsCheckoutOpen(false)}
-        />
-      </DialogContent>
-    </Dialog>
+    <>
+      <Button
+        className="w-full"
+        size="lg"
+        onClick={() => setIsCheckoutOpen(true)}
+      >
+        Enroll Now — Pay via KBZ / Wave
+      </Button>
+
+      <Dialog open={isCheckoutOpen} onOpenChange={setIsCheckoutOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="sr-only">Payment</DialogTitle>
+          </DialogHeader>
+          <MyanmarPaymentCheckout
+            courseId={courseId}
+            courseName={courseName}
+            priceInKyats={priceInCents}
+            onCancel={() => setIsCheckoutOpen(false)}
+            onSuccess={() => {
+              setIsCheckoutOpen(false)
+              router.refresh()
+            }}
+          />
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }

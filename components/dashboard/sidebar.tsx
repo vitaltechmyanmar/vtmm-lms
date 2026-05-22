@@ -17,6 +17,7 @@ import {
   UserCheck,
   FolderTree,
   UserPlus,
+  Banknote,
 } from 'lucide-react'
 
 interface DashboardSidebarProps {
@@ -47,6 +48,7 @@ const adminNavItems = [
   { href: '/dashboard/admin/courses', label: 'All Courses', icon: BookOpen },
   { href: '/dashboard/admin/categories', label: 'Categories', icon: FolderTree },
   { href: '/dashboard/admin/assignments', label: 'Assignments', icon: UserPlus },
+  { href: '/dashboard/admin/payments', label: 'Payment Approvals', icon: Banknote },
   { href: '/dashboard/courses/new', label: 'Create Course', icon: PlusCircle },
   { href: '/dashboard/admin/analytics', label: 'Analytics', icon: BarChart3 },
   { href: '/dashboard/discussions', label: 'Discussions', icon: MessageSquare },

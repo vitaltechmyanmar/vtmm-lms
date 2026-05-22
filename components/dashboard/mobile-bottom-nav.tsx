@@ -16,6 +16,7 @@ import {
   ShoppingBag,
   FolderTree,
   UserPlus,
+  Banknote,
 } from 'lucide-react'
 
 interface MobileBottomNavProps {
@@ -41,7 +42,7 @@ const adminNavItems = [
   { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
   { href: '/dashboard/admin/users', label: 'Users', icon: Users },
   { href: '/dashboard/admin/courses', label: 'Courses', icon: BookOpen },
-  { href: '/dashboard/admin/categories', label: 'Categories', icon: FolderTree },
+  { href: '/dashboard/admin/payments', label: 'Payments', icon: Banknote },
   { href: '/dashboard/settings', label: 'Settings', icon: Settings },
 ]
 
