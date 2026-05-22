@@ -3,7 +3,6 @@ import { createClient } from '@/lib/supabase/server'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { 
-  GraduationCap, 
   Target, 
   Heart, 
   Lightbulb, 
@@ -37,9 +36,7 @@ export default async function AboutPage() {
       <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-              <GraduationCap className="h-5 w-5 text-primary-foreground" />
-            </div>
+            <img src="/vitaltech_logo.png" alt="Vital Tech LearnHub" className="h-9 w-9" />
             <span className="text-xl font-bold">Vital Tech LearnHub</span>
           </Link>
           <nav className="hidden items-center gap-6 md:flex">
@@ -331,9 +328,7 @@ export default async function AboutPage() {
         <div className="container mx-auto px-4">
           <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
             <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-                <GraduationCap className="h-4 w-4 text-primary-foreground" />
-              </div>
+              <img src="/vitaltech_logo.png" alt="Vital Tech LearnHub" className="h-8 w-8" />
               <span className="font-semibold">Vital Tech LearnHub</span>
             </div>
             <nav className="flex gap-6">

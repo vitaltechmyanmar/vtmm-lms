@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { GraduationCap, BookOpen, Clock, Users, Play, CheckCircle, Award } from 'lucide-react'
+import { BookOpen, Clock, Users, Play, CheckCircle, Award } from 'lucide-react'
 import { CourseEnrollButton } from '@/components/course-enroll-button'
 
 interface CourseDetailPageProps {
@@ -52,10 +52,8 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
       <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-              <GraduationCap className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <span className="text-xl font-bold">LearnHub</span>
+            <img src="/vitaltech_logo.png" alt="Vital Tech LearnHub" className="h-9 w-9" />
+            <span className="text-xl font-bold">Vital Tech LearnHub</span>
           </Link>
           <div className="flex items-center gap-3">
             {user ? (
