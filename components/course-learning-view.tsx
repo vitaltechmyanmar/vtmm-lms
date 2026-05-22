@@ -1,12 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import {
   GraduationCap,
@@ -18,95 +19,107 @@ import {
   FileText,
   Menu,
   X,
+  Paperclip,
+  Download,
+  ExternalLink,
+  SlidersHorizontal,
+  Link as LinkIcon,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { QuizPlayer } from '@/components/quiz-player'
-import type { Course, Lesson, Enrollment, LessonProgress, Quiz, QuizQuestion, QuizAttempt } from '@/lib/types'
+import type { Course, Lesson, Enrollment, Quiz, QuizQuestion, QuizAttempt } from '@/lib/types'
 
 interface CourseLearningViewProps {
   course: Course & { lessons: Lesson[] }
   enrollment: Enrollment
-  lessonProgress: LessonProgress[]
+  completedLessonIds: string[]
   userId: string
 }
 
 export function CourseLearningView({
   course,
   enrollment,
-  lessonProgress,
+  completedLessonIds,
   userId,
 }: CourseLearningViewProps) {
   const [currentLessonIndex, setCurrentLessonIndex] = useState(0)
   const [completedLessons, setCompletedLessons] = useState<Set<string>>(
-    new Set(lessonProgress.filter(lp => lp.completed).map(lp => lp.lesson_id))
+    new Set(completedLessonIds)
   )
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [quizData, setQuizData] = useState<Record<string, (Quiz & { questions: QuizQuestion[] }) | null>>({})
   const [quizAttempts, setQuizAttempts] = useState<Record<string, QuizAttempt | null>>({})
+  const [lessonResources, setLessonResources] = useState<Record<string, any[]>>({})
   const router = useRouter()
   const supabase = createClient()
 
   const currentLesson = course.lessons[currentLessonIndex]
-  const progressPercentage = Math.round(
-    (completedLessons.size / course.lessons.length) * 100
-  )
+  const progressPercentage = course.lessons.length > 0
+    ? Math.round((completedLessons.size / course.lessons.length) * 100)
+    : 0
 
   useEffect(() => {
-    // Find first incomplete lesson
-    const firstIncomplete = course.lessons.findIndex(
-      lesson => !completedLessons.has(lesson.id)
-    )
-    if (firstIncomplete !== -1) {
-      setCurrentLessonIndex(firstIncomplete)
-    }
+    // Start from first incomplete lesson
+    const firstIncomplete = course.lessons.findIndex(l => !completedLessons.has(l.id))
+    if (firstIncomplete !== -1) setCurrentLessonIndex(firstIncomplete)
   }, [])
 
   useEffect(() => {
-    async function fetchQuizForLesson() {
+    async function fetchLessonData() {
       const lesson = course.lessons[currentLessonIndex]
-      if (!lesson || quizData[lesson.id] !== undefined) return
+      if (!lesson) return
 
-      const { data: quiz } = await supabase
-        .from('quizzes')
-        .select('*, questions:quiz_questions(*)')
-        .eq('lesson_id', lesson.id)
-        .single()
-
-      if (quiz) {
-        const sorted = {
-          ...quiz,
-          questions: (quiz.questions || []).sort((a: QuizQuestion, b: QuizQuestion) => a.order_index - b.order_index),
-        }
-        setQuizData(prev => ({ ...prev, [lesson.id]: sorted }))
-
-        // Fetch latest attempt
-        const { data: attempt } = await supabase
-          .from('quiz_attempts')
-          .select('*')
-          .eq('user_id', userId)
-          .eq('quiz_id', quiz.id)
-          .order('attempted_at', { ascending: false })
-          .limit(1)
+      // Fetch quiz
+      if (quizData[lesson.id] === undefined) {
+        const { data: quiz } = await supabase
+          .from('quizzes')
+          .select('*, questions:quiz_questions(*)')
+          .eq('lesson_id', lesson.id)
           .single()
 
-        setQuizAttempts(prev => ({ ...prev, [lesson.id]: attempt || null }))
-      } else {
-        setQuizData(prev => ({ ...prev, [lesson.id]: null }))
+        if (quiz) {
+          const sorted = {
+            ...quiz,
+            questions: (quiz.questions || []).sort((a: QuizQuestion, b: QuizQuestion) => a.order_index - b.order_index),
+          }
+          setQuizData(prev => ({ ...prev, [lesson.id]: sorted }))
+
+          const { data: attempt } = await supabase
+            .from('quiz_attempts')
+            .select('*')
+            .eq('user_id', userId)
+            .eq('quiz_id', quiz.id)
+            .order('attempted_at', { ascending: false })
+            .limit(1)
+            .single()
+
+          setQuizAttempts(prev => ({ ...prev, [lesson.id]: attempt || null }))
+        } else {
+          setQuizData(prev => ({ ...prev, [lesson.id]: null }))
+        }
+      }
+
+      // Fetch resources
+      if (lessonResources[lesson.id] === undefined) {
+        const { data: resources } = await supabase
+          .from('lesson_resources')
+          .select('*')
+          .eq('lesson_id', lesson.id)
+          .order('order_index', { ascending: true })
+        setLessonResources(prev => ({ ...prev, [lesson.id]: resources || [] }))
       }
     }
-    fetchQuizForLesson()
+    fetchLessonData()
   }, [currentLessonIndex])
 
   async function markLessonComplete(lessonId: string) {
     if (completedLessons.has(lessonId)) return
 
-    const { error } = await supabase.from('lesson_progress').upsert({
+    const { error } = await supabase.from('lesson_completions').upsert({
       user_id: userId,
       lesson_id: lessonId,
       course_id: course.id,
-      completed: true,
-      completed_at: new Date().toISOString(),
-    })
+    }, { onConflict: 'user_id,lesson_id', ignoreDuplicates: true })
 
     if (error) {
       toast.error('Failed to save progress')
@@ -117,24 +130,22 @@ export function CourseLearningView({
     newCompleted.add(lessonId)
     setCompletedLessons(newCompleted)
 
-    // Update enrollment progress
     const newProgress = Math.round((newCompleted.size / course.lessons.length) * 100)
     await supabase
       .from('enrollments')
-      .update({ progress_percentage: newProgress })
+      .update({ progress_percentage: newProgress, ...(newProgress === 100 ? { completed_at: new Date().toISOString() } : {}) })
       .eq('id', enrollment.id)
 
-    toast.success('Lesson completed!')
+    toast.success('✅ Lesson completed!')
 
-    // Check if course is complete — auto-issue certificate
     if (newCompleted.size === course.lessons.length) {
-      toast.success('Congratulations! You completed the course!')
+      toast.success('🎉 Course complete! Certificate is being generated...')
       const certNumber = `VT-${Date.now().toString(36).toUpperCase()}`
       await supabase.from('certificates').upsert(
         { user_id: userId, course_id: course.id, certificate_number: certNumber },
         { onConflict: 'user_id,course_id', ignoreDuplicates: true }
       )
-      router.push('/dashboard/certificates')
+      setTimeout(() => router.push('/dashboard/certificates'), 2000)
     }
   }
 
@@ -297,6 +308,61 @@ export function CourseLearningView({
                     <div className="prose prose-sm max-w-none dark:prose-invert">
                       <p className="whitespace-pre-wrap">{currentLesson.content}</p>
                     </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Lesson Resources */}
+              {lessonResources[currentLesson.id]?.length > 0 && (
+                <Card className="mb-6">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      <Paperclip className="h-4 w-4" />
+                      Resources ({lessonResources[currentLesson.id].length})
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    {lessonResources[currentLesson.id].map((resource: any) => {
+                      const icons: Record<string, React.ElementType> = {
+                        note: FileText,
+                        slide: SlidersHorizontal,
+                        file: Download,
+                        link: LinkIcon,
+                      }
+                      const Icon = icons[resource.type] || Paperclip
+                      return (
+                        <div key={resource.id} className="flex items-start gap-3 rounded-lg border p-3">
+                          <Icon className="h-4 w-4 mt-0.5 flex-shrink-0 text-primary" />
+                          <div className="min-w-0 flex-1">
+                            <p className="font-medium text-sm">{resource.title}</p>
+                            {resource.type === 'note' && resource.content && (
+                              <p className="text-xs text-muted-foreground mt-1 whitespace-pre-wrap line-clamp-3">
+                                {resource.content}
+                              </p>
+                            )}
+                            {resource.file_name && (
+                              <p className="text-xs text-muted-foreground">{resource.file_name}</p>
+                            )}
+                          </div>
+                          {resource.url && (
+                            <a
+                              href={resource.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex-shrink-0"
+                            >
+                              <Button variant="ghost" size="sm" className="h-7 gap-1.5 text-xs">
+                                {resource.type === 'link' ? (
+                                  <><ExternalLink className="h-3 w-3" /> Open</>
+                                ) : (
+                                  <><Download className="h-3 w-3" /> Download</>
+                                )}
+                              </Button>
+                            </a>
+                          )}
+                        </div>
+                      )
+                    })}
                   </CardContent>
                 </Card>
               )}

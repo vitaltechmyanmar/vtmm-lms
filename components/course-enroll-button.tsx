@@ -125,7 +125,7 @@ export function CourseEnrollButton({
       </Button>
 
       <Dialog open={isCheckoutOpen} onOpenChange={setIsCheckoutOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="sr-only">Payment</DialogTitle>
           </DialogHeader>

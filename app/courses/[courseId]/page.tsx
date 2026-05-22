@@ -3,11 +3,12 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { BookOpen, Clock, Users, Play, CheckCircle, Award } from 'lucide-react'
+import { BookOpen, Clock, Users, Play, CheckCircle, Award, Star } from 'lucide-react'
 import { CourseEnrollButton } from '@/components/course-enroll-button'
 import { MobileNav } from '@/components/mobile-nav'
 import { getCourseEnrollmentCount } from '@/app/actions/db'
 import { formatMMK } from '@/lib/format-currency'
+import { CourseReviews } from '@/components/course-reviews'
 
 interface CourseDetailPageProps {
   params: Promise<{ courseId: string }>
@@ -183,10 +184,11 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
         </div>
       </section>
 
-      {/* Course Content */}
+      {/* Course Content + Reviews */}
       <section className="container mx-auto px-4 py-12">
         <div className="grid gap-8 lg:grid-cols-3">
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 space-y-8">
+            {/* Lesson list */}
             <Card>
               <CardHeader>
                 <CardTitle>Course Content</CardTitle>
@@ -224,6 +226,23 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
                 )}
               </CardContent>
             </Card>
+
+            {/* Reviews */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Star className="h-5 w-5 text-yellow-400 fill-yellow-400" />
+                  Student Reviews
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CourseReviews
+                  courseId={course.id}
+                  isEnrolled={isEnrolled}
+                  userId={user?.id}
+                />
+              </CardContent>
+            </Card>
           </div>
 
           {/* Instructor Info */}
@@ -233,12 +252,20 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
             </CardHeader>
             <CardContent>
               <div className="flex items-center gap-4">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary text-xl font-medium text-primary-foreground">
-                  {course.instructor?.full_name?.charAt(0) || 'I'}
-                </div>
+                {course.instructor?.avatar_url ? (
+                  <img
+                    src={course.instructor.avatar_url}
+                    alt={course.instructor.full_name || 'Instructor'}
+                    className="h-16 w-16 rounded-full object-cover border-2 border-primary/20"
+                  />
+                ) : (
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary text-xl font-medium text-primary-foreground">
+                    {course.instructor?.full_name?.charAt(0) || 'I'}
+                  </div>
+                )}
                 <div>
                   <h4 className="font-semibold">{course.instructor?.full_name || 'Instructor'}</h4>
-                  <p className="text-sm text-muted-foreground">Course Creator</p>
+                  <p className="text-sm text-muted-foreground">Course Instructor</p>
                 </div>
               </div>
               {course.instructor?.bio && (

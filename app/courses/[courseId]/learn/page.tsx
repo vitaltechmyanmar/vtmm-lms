@@ -30,7 +30,7 @@ export default async function CourseLearnPage({ params }: CourseLearnPageProps) 
     .from('courses')
     .select(`
       *,
-      instructor:profiles!instructor_id(full_name),
+      instructor:profiles!instructor_id(full_name, avatar_url),
       lessons(*)
     `)
     .eq('id', courseId)
@@ -40,20 +40,21 @@ export default async function CourseLearnPage({ params }: CourseLearnPageProps) 
     notFound()
   }
 
-  // Get lesson progress
-  const { data: lessonProgress } = await supabase
-    .from('lesson_progress')
-    .select('*')
+  // Get completed lessons
+  const { data: completions } = await supabase
+    .from('lesson_completions')
+    .select('lesson_id, completed_at')
     .eq('user_id', user.id)
     .eq('course_id', courseId)
 
-  const sortedLessons = course.lessons?.sort((a, b) => a.order_index - b.order_index) || []
+  const sortedLessons = course.lessons?.sort((a: any, b: any) => a.order_index - b.order_index) || []
+  const completedLessonIds = (completions || []).map((c: any) => c.lesson_id)
 
   return (
     <CourseLearningView
       course={{ ...course, lessons: sortedLessons }}
       enrollment={enrollment}
-      lessonProgress={lessonProgress || []}
+      completedLessonIds={completedLessonIds}
       userId={user.id}
     />
   )

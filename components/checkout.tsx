@@ -271,94 +271,92 @@ export function MyanmarPaymentCheckout({
   }
 
   return (
-    <div className="space-y-5">
-      <div>
-        <h2 className="text-xl font-bold">Complete Your Purchase</h2>
-        <p className="text-muted-foreground text-sm mt-0.5">
-          <strong>{courseName}</strong> — {formatMMK(priceInKyats)}
-        </p>
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="flex items-start justify-between">
+        <div>
+          <h2 className="text-lg font-bold">Complete Your Purchase</h2>
+          <p className="text-muted-foreground text-xs mt-0.5 line-clamp-1">
+            {courseName}
+          </p>
+        </div>
+        <span className="text-xl font-bold text-primary shrink-0 ml-2">{formatMMK(priceInKyats)}</span>
       </div>
 
-      {/* Method selector */}
+      {/* Method selector — compact */}
       <div>
-        <p className="text-sm font-medium mb-3">Select Payment Method:</p>
-        <div className="grid grid-cols-2 gap-3">
+        <p className="text-xs font-medium text-muted-foreground mb-2">Select Payment Method:</p>
+        <div className="grid grid-cols-2 gap-2">
           {PAYMENT_METHODS.map(pm => (
             <button
               key={pm.id}
               onClick={() => setSelectedMethod(pm.id)}
-              className={`relative flex flex-col items-center gap-2 rounded-xl border-2 p-4 text-center transition-all ${
+              className={`relative flex items-center gap-2 rounded-lg border-2 p-3 text-left transition-all ${
                 selectedMethod === pm.id
                   ? 'border-primary bg-primary/5'
                   : 'border-border hover:border-muted-foreground/40'
               }`}
             >
               {selectedMethod === pm.id && (
-                <CheckCircle2 className="absolute right-2 top-2 h-4 w-4 text-primary" />
+                <CheckCircle2 className="absolute right-2 top-2 h-3.5 w-3.5 text-primary" />
               )}
-              <span className="text-3xl">{pm.logo}</span>
+              <span className="text-2xl">{pm.logo}</span>
               <span className="text-sm font-semibold">{pm.name}</span>
             </button>
           ))}
         </div>
       </div>
 
-      {/* Account info */}
-      <div className={`rounded-xl bg-gradient-to-br ${method.color} p-5 text-white`}>
-        <p className="text-sm text-white/80 mb-3">{method.instruction}</p>
-        <div className="space-y-3 bg-white/10 rounded-lg p-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-sm">
-              <User className="h-4 w-4 text-white/70" />
-              <span className="text-white/70">Account Name</span>
-            </div>
-            <span className="font-semibold">{method.accountName}</span>
+      {/* Account info — compact gradient */}
+      <div className={`rounded-xl bg-gradient-to-br ${method.color} p-4 text-white`}>
+        <p className="text-xs text-white/70 mb-2">{method.instruction}</p>
+        <div className="grid grid-cols-2 gap-2 text-sm bg-white/10 rounded-lg p-3">
+          <div>
+            <p className="text-white/60 text-xs">Account Name</p>
+            <p className="font-semibold">{method.accountName}</p>
           </div>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-sm">
-              <Phone className="h-4 w-4 text-white/70" />
-              <span className="text-white/70">Phone Number</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="font-mono font-bold tracking-wider">{method.phoneNumber}</span>
+          <div>
+            <p className="text-white/60 text-xs">Phone Number</p>
+            <div className="flex items-center gap-1.5">
+              <p className="font-mono font-bold">{method.phoneNumber}</p>
               <button
                 onClick={() => copyToClipboard(method.phoneNumber, 'Phone number')}
-                className="rounded-md bg-white/20 p-1 hover:bg-white/30 transition-colors"
+                className="rounded bg-white/20 p-0.5 hover:bg-white/30 transition-colors"
                 title="Copy"
               >
-                <Copy className="h-3.5 w-3.5" />
+                <Copy className="h-3 w-3" />
               </button>
             </div>
           </div>
-          <div className="flex items-center justify-between border-t border-white/20 pt-3">
-            <div className="flex items-center gap-2 text-sm">
-              <Banknote className="h-4 w-4 text-white/70" />
-              <span className="text-white/70">Amount</span>
-            </div>
-            <span className="font-bold text-lg">{formatMMK(priceInKyats)}</span>
+          <div className="col-span-2 border-t border-white/20 pt-2 flex items-center justify-between">
+            <span className="text-white/70 text-xs flex items-center gap-1">
+              <Banknote className="h-3.5 w-3.5" /> Amount to transfer
+            </span>
+            <span className="font-bold">{formatMMK(priceInKyats)}</span>
           </div>
         </div>
       </div>
 
-      {/* Steps guide */}
-      <div className="rounded-lg border bg-muted/20 p-3 space-y-2 text-sm">
-        <p className="font-medium text-xs uppercase tracking-wide text-muted-foreground">How to pay:</p>
+      {/* Steps guide — compact horizontal */}
+      <div className="flex gap-1.5 text-xs text-muted-foreground">
         {[
-          `${method.name} app ဖွင့်ပါ`,
-          `${method.phoneNumber} (${method.accountName}) သို့ ${formatMMK(priceInKyats)} လွှဲပါ`,
-          'Transaction ID/Reference ကို မှတ်ထားပါ',
-          '"I have paid" ကိုနှိပ်ပြီး details ဖြည့်ပါ',
-        ].map((step, i) => (
-          <div key={i} className="flex items-start gap-2">
-            <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
+          'Open app',
+          `Transfer ${formatMMK(priceInKyats)}`,
+          'Note Txn ID',
+          'Click "I have paid"',
+        ].map((s, i) => (
+          <div key={i} className="flex items-center gap-1 min-w-0">
+            <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground">
               {i + 1}
             </span>
-            <span className="text-muted-foreground">{step}</span>
+            <span className="hidden sm:block truncate">{s}</span>
+            {i < 3 && <span className="shrink-0 text-muted-foreground/40">→</span>}
           </div>
         ))}
       </div>
 
-      <div className="flex gap-3">
+      {/* Actions */}
+      <div className="flex gap-2 pt-1">
         <Button className="flex-1" onClick={() => setStep('confirm')}>
           I have paid →
         </Button>
