@@ -100,7 +100,16 @@ export async function createCourse(courseData: {
   priceInCents?: number
 }) {
   const supabase = await createClient()
-  const { data, error } = await supabase.from('courses').insert([courseData]).select().single()
+  // Fix: Map camelCase params to snake_case DB column names
+  const dbData = {
+    title: courseData.title,
+    description: courseData.description,
+    instructor_id: courseData.instructorId,
+    category: courseData.category,
+    level: courseData.level ?? 'beginner',
+    price_in_cents: courseData.priceInCents ?? 0,
+  }
+  const { data, error } = await supabase.from('courses').insert([dbData]).select().single()
   return { data, error }
 }
 
@@ -124,15 +133,30 @@ export async function createLesson(lessonData: {
   durationMinutes?: number
 }) {
   const supabase = await createClient()
-  const { data, error } = await supabase.from('lessons').insert([lessonData]).select().single()
+  // Fix: Map camelCase params to snake_case DB column names
+  const dbData = {
+    course_id: lessonData.courseId,
+    title: lessonData.title,
+    content: lessonData.content ?? null,
+    video_url: lessonData.videoUrl ?? null,
+    order_index: lessonData.orderIndex,
+    duration_minutes: lessonData.durationMinutes ?? 0,
+  }
+  const { data, error } = await supabase.from('lessons').insert([dbData]).select().single()
   return { data, error }
 }
 
 export async function createEnrollment(enrollmentData: { userId: string; courseId: string; paymentId?: string }) {
   const supabase = await createClient()
+  // Fix: Map camelCase params to snake_case DB column names
+  const dbData = {
+    user_id: enrollmentData.userId,
+    course_id: enrollmentData.courseId,
+    payment_id: enrollmentData.paymentId ?? null,
+  }
   const { data, error } = await supabase
     .from('enrollments')
-    .insert([enrollmentData])
+    .insert([dbData])
     .select()
     .single()
   return { data, error }
@@ -184,14 +208,26 @@ export async function updateUserRole(userId: string, role: 'student' | 'instruct
 
 export async function getEnrollmentStats() {
   const supabase = await createClient()
-  const { data: enrollments, error: enrollError } = await supabase.from('enrollments').select('count')
-  const { data: courses, error: courseError } = await supabase.from('courses').select('count')
-  const { data: users, error: userError } = await supabase.from('profiles').select('count')
+  // Fix: Use correct Supabase count syntax with { count: 'exact', head: true }
+  const { count: enrollmentsCount, error: enrollError } = await supabase
+    .from('enrollments')
+    .select('*', { count: 'exact', head: true })
+  const { count: coursesCount, error: courseError } = await supabase
+    .from('courses')
+    .select('*', { count: 'exact', head: true })
+  const { count: usersCount, error: userError } = await supabase
+    .from('profiles')
+    .select('*', { count: 'exact', head: true })
+  const { count: instructorsCount } = await supabase
+    .from('profiles')
+    .select('*', { count: 'exact', head: true })
+    .eq('role', 'instructor')
 
   return {
-    enrollments: enrollments?.[0]?.count || 0,
-    courses: courses?.[0]?.count || 0,
-    users: users?.[0]?.count || 0,
+    enrollments: enrollmentsCount ?? 0,
+    courses: coursesCount ?? 0,
+    users: usersCount ?? 0,
+    instructors: instructorsCount ?? 0,
     error: enrollError || courseError || userError,
   }
 }

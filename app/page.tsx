@@ -2,10 +2,12 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { Button } from '@/components/ui/button'
 import { BookOpen, Users, Award, ChevronRight, Play } from 'lucide-react'
+import { getEnrollmentStats } from '@/app/actions/db'
 
 export default async function HomePage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
+  const stats = await getEnrollmentStats()
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -81,20 +83,20 @@ export default async function HomePage() {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
             <div className="text-center">
-              <div className="text-3xl font-bold text-primary md:text-4xl">10K+</div>
-              <div className="mt-1 text-sm text-muted-foreground">Active Students</div>
+              <div className="text-3xl font-bold text-primary md:text-4xl">{stats.users.toLocaleString()}</div>
+              <div className="mt-1 text-sm text-muted-foreground">Registered Members</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-primary md:text-4xl">500+</div>
-              <div className="mt-1 text-sm text-muted-foreground">Expert Instructors</div>
+              <div className="text-3xl font-bold text-primary md:text-4xl">{stats.instructors > 0 ? stats.instructors.toLocaleString() : '—'}</div>
+              <div className="mt-1 text-sm text-muted-foreground">Instructors</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-primary md:text-4xl">1,000+</div>
+              <div className="text-3xl font-bold text-primary md:text-4xl">{stats.courses.toLocaleString()}</div>
               <div className="mt-1 text-sm text-muted-foreground">Courses Available</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-primary md:text-4xl">95%</div>
-              <div className="mt-1 text-sm text-muted-foreground">Satisfaction Rate</div>
+              <div className="text-3xl font-bold text-primary md:text-4xl">{stats.enrollments.toLocaleString()}</div>
+              <div className="mt-1 text-sm text-muted-foreground">Total Enrollments</div>
             </div>
           </div>
         </div>

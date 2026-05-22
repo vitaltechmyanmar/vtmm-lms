@@ -1,4 +1,4 @@
-# EduFlow - Learning Management System
+# Vital Tech LearnHub - Learning Management System
 
 A comprehensive learning management system built with Next.js, Supabase, and Stripe. Designed for instructors to create and manage courses, students to learn and earn certificates, and admins to oversee the platform.
 
