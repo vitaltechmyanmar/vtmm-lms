@@ -121,13 +121,20 @@ export default function AssignmentsPage() {
     }
 
     // Also create an enrollment for the user
-    await supabase.from('enrollments').upsert({
+    const { error: enrollError } = await supabase.from('enrollments').upsert({
       user_id: formData.user_id,
       course_id: formData.course_id,
       progress_percentage: 0,
-    }, { onConflict: 'user_id,course_id' })
+    }, { onConflict: 'user_id,course_id', ignoreDuplicates: true })
 
-    toast.success('User assigned to course successfully')
+    if (enrollError) {
+      // Assignment succeeded but enrollment failed — warn but don't block
+      console.error('Enrollment upsert error:', enrollError)
+      toast.warning('Assignment created but enrollment sync failed: ' + enrollError.message)
+    } else {
+      toast.success('User assigned to course successfully')
+    }
+
     setSaving(false)
     setIsDialogOpen(false)
     setFormData({ user_id: '', course_id: '', notes: '', expires_at: '' })
