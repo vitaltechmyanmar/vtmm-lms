@@ -45,6 +45,22 @@ export interface Lesson {
   duration_minutes: number
   created_at: string
   quiz?: Quiz
+  resources?: LessonResource[]
+}
+
+export type LessonResourceType = 'note' | 'slide' | 'file' | 'link'
+
+export interface LessonResource {
+  id: string
+  lesson_id: string
+  title: string
+  type: LessonResourceType
+  url: string | null
+  content: string | null
+  file_name: string | null
+  file_size: number | null
+  order_index: number
+  created_at: string
 }
 
 export interface Payment {

@@ -52,6 +52,7 @@ import { toast } from 'sonner'
 import Link from 'next/link'
 import { QuizBuilder } from '@/components/dashboard/quiz-builder'
 import { CourseCoverUpload } from '@/components/dashboard/course-cover-upload'
+import { LessonResourceManager } from '@/components/dashboard/lesson-resource-manager'
 import { formatMMK, parseMMK } from '@/lib/format-currency'
 import type { Course, Lesson, CourseLevel, Category } from '@/lib/types'
 
@@ -501,31 +502,13 @@ export function CourseEditor({ course, isAdmin = false }: CourseEditorProps) {
                   />
                   <p className="text-xs text-muted-foreground">Set to 0 for a free course</p>
                 </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="thumbnail">Thumbnail URL</Label>
-                  <Input
-                    id="thumbnail"
-                    type="url"
-                    value={thumbnailUrl}
-                    onChange={e => setThumbnailUrl(e.target.value)}
-                    placeholder="https://example.com/image.jpg"
-                  />
-                </div>
               </div>
 
-              {thumbnailUrl && (
-                <div className="overflow-hidden rounded-lg border">
-                  <img
-                    src={thumbnailUrl}
-                    alt="Thumbnail preview"
-                    className="aspect-video w-full object-cover"
-                    onError={e => {
-                      ;(e.target as HTMLImageElement).style.display = 'none'
-                    }}
-                  />
-                </div>
-              )}
+              {/* Cover Photo — upload or URL */}
+              <CourseCoverUpload
+                value={thumbnailUrl}
+                onChange={setThumbnailUrl}
+              />
             </CardContent>
           </Card>
         </TabsContent>
@@ -694,6 +677,8 @@ export function CourseEditor({ course, isAdmin = false }: CourseEditorProps) {
                       >
                         <ClipboardList className="h-4 w-4" />
                       </Button>
+                      {/* Resources */}
+                      <LessonResourceManager lessonId={lesson.id} />
                     </div>
                     {/* Quiz panel */}
                     {openQuizLessonId === lesson.id && (
