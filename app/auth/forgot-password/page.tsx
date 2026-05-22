@@ -49,7 +49,7 @@ export default function ForgotPasswordPage() {
           {sent ? (
             <div className="space-y-4 text-center">
               <div className="flex justify-center">
-                <CheckCircle className="h-12 w-12 text-green-500" />
+                <CheckCircle className="h-12 w-12 text-primary" />
               </div>
               <p className="text-sm text-muted-foreground">
                 We sent a password reset link to <strong>{email}</strong>. Check your email and follow the instructions.

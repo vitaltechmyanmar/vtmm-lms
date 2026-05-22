@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { GraduationCap, CheckCircle, BookOpen, ArrowRight } from 'lucide-react'
+import { CheckCircle, BookOpen, ArrowRight } from 'lucide-react'
 
 interface SuccessPageProps {
   params: Promise<{ courseId: string }>
@@ -41,8 +41,8 @@ export default async function SuccessPage({ params, searchParams }: SuccessPageP
     <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md text-center">
         <CardHeader className="pb-4">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-            <CheckCircle className="h-10 w-10 text-green-600" />
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+            <CheckCircle className="h-10 w-10 text-primary" />
           </div>
           <CardTitle className="text-2xl">Payment Successful!</CardTitle>
         </CardHeader>
@@ -82,8 +82,8 @@ export default async function SuccessPage({ params, searchParams }: SuccessPageP
         </CardContent>
       </Card>
       <div className="mt-8 flex items-center gap-2 text-muted-foreground">
-        <GraduationCap className="h-5 w-5" />
-        <span className="text-sm">LearnHub</span>
+        <img src="/vitaltech_logo.png" alt="Vital Tech LearnHub" className="h-5 w-5" />
+        <span className="text-sm">Vital Tech LearnHub</span>
       </div>
     </div>
   )

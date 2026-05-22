@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { BookOpen, Clock, Users, Play, CheckCircle, Award } from 'lucide-react'
 import { CourseEnrollButton } from '@/components/course-enroll-button'
+import { MobileNav } from '@/components/mobile-nav'
 
 interface CourseDetailPageProps {
   params: Promise<{ courseId: string }>
@@ -57,19 +58,26 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
           </Link>
           <div className="flex items-center gap-3">
             {user ? (
-              <Link href="/dashboard">
+              <Link href="/dashboard" className="hidden md:inline-flex">
                 <Button>Dashboard</Button>
               </Link>
             ) : (
-              <>
+              <div className="hidden items-center gap-3 md:flex">
                 <Link href="/auth/login">
                   <Button variant="ghost">Sign in</Button>
                 </Link>
                 <Link href="/auth/sign-up">
                   <Button>Get Started</Button>
                 </Link>
-              </>
+              </div>
             )}
+            <MobileNav
+              isLoggedIn={!!user}
+              links={[
+                { href: '/courses', label: 'Browse Courses' },
+                { href: '/about', label: 'About' },
+              ]}
+            />
           </div>
         </div>
       </header>

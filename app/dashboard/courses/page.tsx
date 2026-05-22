@@ -83,8 +83,8 @@ export default async function InstructorCoursesPage() {
                     <span
                       className={`rounded-full px-2 py-0.5 text-xs font-medium ${
                         course.is_published
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-yellow-100 text-yellow-700'
+                          ? 'bg-primary/10 text-primary'
+                          : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
                       }`}
                     >
                       {course.is_published ? 'Published' : 'Draft'}

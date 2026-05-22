@@ -15,6 +15,7 @@ import {
   MapPin,
   Phone
 } from 'lucide-react'
+import { MobileNav } from '@/components/mobile-nav'
 
 export default async function AboutPage() {
   const supabase = await createClient()
@@ -49,19 +50,26 @@ export default async function AboutPage() {
           </nav>
           <div className="flex items-center gap-3">
             {user ? (
-              <Link href="/dashboard">
+              <Link href="/dashboard" className="hidden md:inline-flex">
                 <Button>Dashboard</Button>
               </Link>
             ) : (
-              <>
+              <div className="hidden items-center gap-3 md:flex">
                 <Link href="/auth/login">
                   <Button variant="ghost">Sign in</Button>
                 </Link>
                 <Link href="/auth/sign-up">
                   <Button>Get Started</Button>
                 </Link>
-              </>
+              </div>
             )}
+            <MobileNav
+              isLoggedIn={!!user}
+              links={[
+                { href: '/courses', label: 'Browse Courses' },
+                { href: '/about', label: 'About' },
+              ]}
+            />
           </div>
         </div>
       </header>
@@ -140,8 +148,8 @@ export default async function AboutPage() {
             </div>
 
             <div className="text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-green-100 dark:bg-green-900/30">
-                <Globe className="h-8 w-8 text-green-600 dark:text-green-400" />
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-accent/20 dark:bg-accent/10">
+                <Globe className="h-8 w-8 text-accent-foreground dark:text-accent" />
               </div>
               <h3 className="mb-2 text-lg font-semibold">Accessibility</h3>
               <p className="text-sm text-muted-foreground">

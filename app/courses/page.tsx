@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { BookOpen, Users, ChevronRight } from 'lucide-react'
+import { MobileNav } from '@/components/mobile-nav'
 
 export default async function CoursesPage({
   searchParams,
@@ -65,19 +66,26 @@ export default async function CoursesPage({
           </nav>
           <div className="flex items-center gap-3">
             {user ? (
-              <Link href="/dashboard">
+              <Link href="/dashboard" className="hidden md:inline-flex">
                 <Button>Dashboard</Button>
               </Link>
             ) : (
-              <>
+              <div className="hidden items-center gap-3 md:flex">
                 <Link href="/auth/login">
                   <Button variant="ghost">Sign in</Button>
                 </Link>
                 <Link href="/auth/sign-up">
                   <Button>Get Started</Button>
                 </Link>
-              </>
+              </div>
             )}
+            <MobileNav
+              isLoggedIn={!!user}
+              links={[
+                { href: '/courses', label: 'Browse Courses' },
+                { href: '/about', label: 'About' },
+              ]}
+            />
           </div>
         </div>
       </header>
