@@ -231,3 +231,50 @@ export async function getEnrollmentStats() {
     error: enrollError || courseError || userError,
   }
 }
+
+// Uses SECURITY DEFINER DB function to bypass RLS — safe for public display
+export async function getCourseEnrollmentCount(courseId: string): Promise<number> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .rpc('get_course_enrollment_count', { course_uuid: courseId })
+  if (error) return 0
+  return data ?? 0
+}
+
+// Returns courses with accurate enrollment count regardless of auth state
+export async function getPublishedCoursesWithCounts(filters?: {
+  category?: string
+  level?: string
+  q?: string
+}) {
+  const supabase = await createClient()
+
+  let query = supabase
+    .from('courses')
+    .select(`
+      *,
+      instructor:profiles!instructor_id(full_name, avatar_url),
+      lessons(count)
+    `)
+    .eq('is_published', true)
+
+  if (filters?.category) query = query.eq('category', filters.category)
+  if (filters?.level) query = query.eq('level', filters.level)
+  if (filters?.q) {
+    query = query.or(`title.ilike.%${filters.q}%,description.ilike.%${filters.q}%`)
+  }
+
+  const { data: courses, error } = await query.order('created_at', { ascending: false })
+  if (error || !courses) return { data: [], error }
+
+  // Fetch enrollment counts via security definer function
+  const coursesWithCounts = await Promise.all(
+    courses.map(async (course) => {
+      const { data: count } = await supabase
+        .rpc('get_course_enrollment_count', { course_uuid: course.id })
+      return { ...course, enrollment_count: count ?? 0 }
+    })
+  )
+
+  return { data: coursesWithCounts, error: null }
+}

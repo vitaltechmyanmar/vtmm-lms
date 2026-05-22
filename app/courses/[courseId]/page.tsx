@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { BookOpen, Clock, Users, Play, CheckCircle, Award } from 'lucide-react'
 import { CourseEnrollButton } from '@/components/course-enroll-button'
 import { MobileNav } from '@/components/mobile-nav'
+import { getCourseEnrollmentCount } from '@/app/actions/db'
 
 interface CourseDetailPageProps {
   params: Promise<{ courseId: string }>
@@ -43,6 +44,9 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
       .single()
     isEnrolled = !!enrollment
   }
+
+  // Get accurate enrollment count (bypasses RLS via security definer function)
+  const enrollmentCount = await getCourseEnrollmentCount(courseId)
 
   const sortedLessons = course.lessons?.sort((a, b) => a.order_index - b.order_index) || []
   const totalDuration = sortedLessons.reduce((sum, l) => sum + (l.duration_minutes || 0), 0)
@@ -111,6 +115,10 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
                 <span className="flex items-center gap-1">
                   <Clock className="h-4 w-4" />
                   {totalDuration} minutes
+                </span>
+                <span className="flex items-center gap-1">
+                  <Users className="h-4 w-4" />
+                  {enrollmentCount} students enrolled
                 </span>
                 <span className="flex items-center gap-1">
                   <Award className="h-4 w-4" />

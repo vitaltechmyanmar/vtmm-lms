@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { BookOpen, Users, ChevronRight } from 'lucide-react'
 import { MobileNav } from '@/components/mobile-nav'
+import { getPublishedCoursesWithCounts } from '@/app/actions/db'
 
 export default async function CoursesPage({
   searchParams,
@@ -22,30 +23,12 @@ export default async function CoursesPage({
     .eq('is_active', true)
     .order('order_index', { ascending: true })
 
-  // Build courses query
-  let query = supabase
-    .from('courses')
-    .select(`
-      *,
-      instructor:profiles!instructor_id(full_name, avatar_url),
-      lessons(count),
-      enrollments(count)
-    `)
-    .eq('is_published', true)
-
-  if (params.category) {
-    query = query.eq('category', params.category)
-  }
-
-  if (params.level) {
-    query = query.eq('level', params.level)
-  }
-
-  if (params.q) {
-    query = query.or(`title.ilike.%${params.q}%,description.ilike.%${params.q}%`)
-  }
-
-  const { data: courses } = await query.order('created_at', { ascending: false })
+  // Fetch courses with accurate enrollment counts (bypasses RLS via DB function)
+  const { data: courses } = await getPublishedCoursesWithCounts({
+    category: params.category,
+    level: params.level,
+    q: params.q,
+  })
 
   return (
     <div className="min-h-screen bg-background">
@@ -216,7 +199,7 @@ export default async function CoursesPage({
                         </span>
                         <span className="flex items-center gap-1">
                           <Users className="h-4 w-4" />
-                          {course.enrollments?.[0]?.count || 0} students
+                          {course.enrollment_count} students
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
