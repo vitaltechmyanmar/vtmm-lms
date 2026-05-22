@@ -1,8 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Users, BookOpen, DollarSign, TrendingUp } from 'lucide-react'
+import { Users, BookOpen, TrendingUp, Banknote } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import { formatMMKAmount } from '@/lib/format-currency'
 
 interface AdminDashboardProps {
   userId: string
@@ -77,11 +78,11 @@ export async function AdminDashboard({ userId }: AdminDashboardProps) {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <Banknote className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              ${(totalRevenue / 100).toFixed(2)}
+              {formatMMKAmount(totalRevenue)}
             </div>
           </CardContent>
         </Card>

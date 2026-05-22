@@ -9,6 +9,15 @@ export function formatMMK(priceInKyats: number): string {
 }
 
 /**
+ * Format a revenue/amount value stored as kyats (whole numbers).
+ * Always shows the currency, even for 0.
+ * e.g.  1500000 → "1,500,000 MMK"
+ */
+export function formatMMKAmount(kyats: number): string {
+  return `${kyats.toLocaleString('en-US')} MMK`
+}
+
+/**
  * Parse a MMK display value entered by the user into an integer (kyats).
  * Strips commas, spaces, and the "MMK" suffix before parsing.
  */

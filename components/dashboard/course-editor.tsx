@@ -53,7 +53,7 @@ import Link from 'next/link'
 import { QuizBuilder } from '@/components/dashboard/quiz-builder'
 import { CourseCoverUpload } from '@/components/dashboard/course-cover-upload'
 import { LessonResourceManager } from '@/components/dashboard/lesson-resource-manager'
-import { formatMMK, parseMMK } from '@/lib/format-currency'
+import { formatMMK, formatMMKAmount, parseMMK } from '@/lib/format-currency'
 import type { Course, Lesson, CourseLevel, Category } from '@/lib/types'
 
 interface CourseEditorProps {
@@ -382,9 +382,7 @@ export function CourseEditor({ course, isAdmin = false }: CourseEditorProps) {
             <div>
               <p className="text-sm text-muted-foreground">Price</p>
               <p className="text-xl font-bold">
-                {parseFloat(priceInCents || '0') === 0
-                  ? 'Free'
-                  : `$${parseFloat(priceInCents || '0').toFixed(2)}`}
+                {formatMMK(parseFloat(priceInCents || '0'))}
               </p>
             </div>
           </CardContent>
@@ -490,17 +488,17 @@ export function CourseEditor({ course, isAdmin = false }: CourseEditorProps) {
 
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="price">Price (USD)</Label>
+                  <Label htmlFor="price">Price (MMK)</Label>
                   <Input
                     id="price"
                     type="number"
                     min="0"
-                    step="0.01"
+                    step="1000"
                     value={priceInCents}
                     onChange={e => setPriceInCents(e.target.value)}
-                    placeholder="0.00"
+                    placeholder="0"
                   />
-                  <p className="text-xs text-muted-foreground">Set to 0 for a free course</p>
+                  <p className="text-xs text-muted-foreground">Set to 0 for a free course. Enter amount in Myanmar Kyat (MMK)</p>
                 </div>
               </div>
 

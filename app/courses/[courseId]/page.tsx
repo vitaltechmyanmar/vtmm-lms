@@ -7,6 +7,7 @@ import { BookOpen, Clock, Users, Play, CheckCircle, Award } from 'lucide-react'
 import { CourseEnrollButton } from '@/components/course-enroll-button'
 import { MobileNav } from '@/components/mobile-nav'
 import { getCourseEnrollmentCount } from '@/app/actions/db'
+import { formatMMK } from '@/lib/format-currency'
 
 interface CourseDetailPageProps {
   params: Promise<{ courseId: string }>
@@ -153,11 +154,7 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
               </div>
               <CardContent className="p-6">
                 <div className="mb-4 text-3xl font-bold">
-                  {course.price_in_cents === 0 ? (
-                    'Free'
-                  ) : (
-                    `$${(course.price_in_cents / 100).toFixed(2)}`
-                  )}
+                  {formatMMK(course.price_in_cents)}
                 </div>
                 <CourseEnrollButton
                   courseId={course.id}

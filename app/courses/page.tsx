@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { BookOpen, Users, ChevronRight } from 'lucide-react'
 import { MobileNav } from '@/components/mobile-nav'
 import { getPublishedCoursesWithCounts } from '@/app/actions/db'
+import { formatMMK } from '@/lib/format-currency'
 
 export default async function CoursesPage({
   searchParams,
@@ -204,11 +205,7 @@ export default async function CoursesPage({
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-lg font-bold text-primary">
-                          {course.price_in_cents === 0 ? (
-                            'Free'
-                          ) : (
-                            `$${(course.price_in_cents / 100).toFixed(2)}`
-                          )}
+                          {formatMMK(course.price_in_cents)}
                         </span>
                         <Button size="sm">
                           View Course

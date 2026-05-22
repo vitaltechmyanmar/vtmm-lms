@@ -3,7 +3,8 @@ import { redirect } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
-import { BarChart3, TrendingUp, BookOpen, Users, DollarSign, CheckCircle } from 'lucide-react'
+import { BarChart3, TrendingUp, BookOpen, Users, Banknote, CheckCircle } from 'lucide-react'
+import { formatMMKAmount } from '@/lib/format-currency'
 
 export default async function AnalyticsPage() {
   const supabase = await createClient()
@@ -100,10 +101,10 @@ export default async function AnalyticsPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Revenue</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <Banknote className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${(totalRevenue / 100).toFixed(2)}</div>
+            <div className="text-2xl font-bold">{formatMMKAmount(totalRevenue)}</div>
             <p className="text-xs text-muted-foreground">{payments?.length || 0} transactions</p>
           </CardContent>
         </Card>

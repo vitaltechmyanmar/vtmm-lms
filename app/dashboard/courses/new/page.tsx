@@ -94,7 +94,7 @@ export default function NewCoursePage() {
         description,
         category: category || null,
         level,
-        price_in_cents: Math.round(parseFloat(priceInCents || '0') * 100),
+        price_in_cents: Math.round(parseFloat(priceInCents || '0')),
         thumbnail_url: thumbnailUrl || null,
         instructor_id: user.id,
         is_published: false,
@@ -218,18 +218,18 @@ export default function NewCoursePage() {
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="price">Price (USD)</Label>
+                <Label htmlFor="price">Price (MMK)</Label>
                 <Input
                   id="price"
                   type="number"
                   min="0"
-                  step="0.01"
-                  placeholder="0.00"
+                  step="1000"
+                  placeholder="0"
                   value={priceInCents}
                   onChange={e => setPriceInCents(e.target.value)}
                   disabled={isLoading}
                 />
-                <p className="text-xs text-muted-foreground">Leave empty for a free course</p>
+                <p className="text-xs text-muted-foreground">Leave empty for a free course (Myanmar Kyat)</p>
               </div>
 
               <div className="space-y-2">

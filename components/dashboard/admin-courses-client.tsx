@@ -45,6 +45,7 @@ import {
   Play,
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { formatMMK } from '@/lib/format-currency'
 
 interface CourseRow {
   id: string
@@ -268,9 +269,7 @@ export function AdminCoursesClient({ initialCourses }: AdminCoursesClientProps) 
                     <span>{course.lessons?.[0]?.count || 0} lessons</span>
                     <span>{course.enrollments?.[0]?.count || 0} students</span>
                     <span className="font-medium text-foreground">
-                      {course.price_in_cents === 0
-                        ? 'Free'
-                        : `$${(course.price_in_cents / 100).toFixed(2)}`}
+                      {formatMMK(course.price_in_cents)}
                     </span>
                   </div>
                 </div>

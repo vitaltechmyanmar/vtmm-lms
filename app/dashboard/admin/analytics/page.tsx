@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Users, BookOpen, DollarSign, TrendingUp } from 'lucide-react'
+import { Users, BookOpen, Banknote, TrendingUp } from 'lucide-react'
+import { formatMMKAmount } from '@/lib/format-currency'
 
 export default async function AdminAnalyticsPage() {
   const supabase = await createClient()
@@ -68,10 +69,10 @@ export default async function AdminAnalyticsPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <Banknote className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${(totalRevenue / 100).toFixed(2)}</div>
+            <div className="text-2xl font-bold">{formatMMKAmount(totalRevenue)}</div>
           </CardContent>
         </Card>
         <Card>

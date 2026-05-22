@@ -1,8 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { BookOpen, Users, DollarSign, TrendingUp } from 'lucide-react'
+import { BookOpen, Users, TrendingUp, Banknote } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import { formatMMK, formatMMKAmount } from '@/lib/format-currency'
 
 interface InstructorDashboardProps {
   userId: string
@@ -84,11 +85,11 @@ export async function InstructorDashboard({ userId }: InstructorDashboardProps) 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <Banknote className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              ${(totalRevenue / 100).toFixed(2)}
+              {formatMMKAmount(totalRevenue)}
             </div>
           </CardContent>
         </Card>
@@ -146,7 +147,7 @@ export async function InstructorDashboard({ userId }: InstructorDashboardProps) 
                   </div>
                   <h3 className="font-semibold line-clamp-1">{course.title}</h3>
                   <p className="mb-3 text-sm font-medium text-primary">
-                    ${(course.price_in_cents / 100).toFixed(2)}
+                    {formatMMK(course.price_in_cents)}
                   </p>
                   <Link href={`/dashboard/courses/${course.id}`}>
                     <Button variant="outline" className="w-full" size="sm">

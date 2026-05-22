@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { BookOpen, Plus, MoreVertical, Eye, Edit, Trash } from 'lucide-react'
+import { formatMMK } from '@/lib/format-currency'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -101,7 +102,7 @@ export default async function InstructorCoursesPage() {
                     <span>{course.lessons?.[0]?.count || 0} lessons</span>
                     <span>{course.enrollments?.[0]?.count || 0} students</span>
                     <span className="font-medium text-foreground">
-                      ${(course.price_in_cents / 100).toFixed(2)}
+                      {formatMMK(course.price_in_cents)}
                     </span>
                   </div>
                 </div>

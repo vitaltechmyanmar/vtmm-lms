@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { ShoppingBag, Calendar, DollarSign } from 'lucide-react'
+import { ShoppingBag, Calendar, Banknote } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import { formatMMKAmount } from '@/lib/format-currency'
 
 export default async function PurchasesPage() {
   const supabase = await createClient()
@@ -70,9 +71,9 @@ export default async function PurchasesPage() {
                   </div>
                   <div className="text-right">
                     <div className="flex items-center gap-2 justify-end mb-2">
-                      <DollarSign className="h-4 w-4" />
+                      <Banknote className="h-4 w-4" />
                       <span className="text-lg font-semibold">
-                        {(payment.amount_in_cents / 100).toFixed(2)}
+                        {formatMMKAmount(payment.amount_in_cents)}
                       </span>
                     </div>
                     <Badge variant={getStatusColor(payment.status)}>
