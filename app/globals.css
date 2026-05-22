@@ -135,3 +135,9 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Marquee animation for tech stack ticker */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}

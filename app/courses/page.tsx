@@ -36,9 +36,10 @@ export default async function CoursesPage({
       {/* Navigation */}
       <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
-          <Link href="/" className="flex items-center gap-2">
-            <img src="/vitaltech_logo.png" alt="Vital Tech LearnHub" className="h-9 w-9" />
-            <span className="text-xl font-bold">Vital Tech LearnHub</span>
+          <Link href="/" className="flex items-center gap-2 min-w-0">
+            <img src="/vitaltech_logo.png" alt="Vital Tech LearnHub" className="h-9 w-9 flex-shrink-0" />
+            <span className="text-lg font-bold hidden sm:block">Vital Tech LearnHub</span>
+            <span className="text-lg font-bold sm:hidden">VT LearnHub</span>
           </Link>
           <nav className="hidden items-center gap-6 md:flex">
             <Link href="/courses" className="text-sm font-medium text-foreground">
