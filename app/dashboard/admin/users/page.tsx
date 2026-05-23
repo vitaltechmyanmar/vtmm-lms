@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Users, UserCheck, UserX, BarChart3 } from 'lucide-react'
+import { Users, UserCheck, UserX, BarChart3, Mail } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import { InviteInstructorDialog } from './invite-instructor-dialog'
 
 export default async function AdminUsersPage() {
   const supabase = await createClient()
@@ -9,6 +10,12 @@ export default async function AdminUsersPage() {
   const { data: profiles } = await supabase
     .from('profiles')
     .select('*')
+    .order('created_at', { ascending: false })
+
+  const { data: pendingInvites } = await supabase
+    .from('instructor_invites')
+    .select('*')
+    .eq('status', 'pending')
     .order('created_at', { ascending: false })
 
   const studentCount = profiles?.filter(p => p.role === 'student').length || 0
@@ -28,11 +35,14 @@ export default async function AdminUsersPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Users Management</h1>
-        <p className="text-muted-foreground">
-          Manage all platform users
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Users Management</h1>
+          <p className="text-muted-foreground">
+            Manage all platform users
+          </p>
+        </div>
+        <InviteInstructorDialog />
       </div>
 
       {/* Stats */}
@@ -74,6 +84,53 @@ export default async function AdminUsersPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Pending Instructor Invites */}
+      {pendingInvites && pendingInvites.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Mail className="h-5 w-5 text-muted-foreground" />
+              Pending Instructor Invitations
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left py-2 px-4">Email</th>
+                    <th className="text-left py-2 px-4">Status</th>
+                    <th className="text-left py-2 px-4">Invited At</th>
+                    <th className="text-left py-2 px-4">Expires At</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pendingInvites.map((invite) => {
+                    const isExpired = new Date(invite.expires_at) < new Date()
+                    return (
+                      <tr key={invite.id} className="border-b hover:bg-muted">
+                        <td className="py-2 px-4 font-medium">{invite.email}</td>
+                        <td className="py-2 px-4">
+                          <Badge variant={isExpired ? 'destructive' : 'outline'}>
+                            {isExpired ? 'Expired' : 'Pending'}
+                          </Badge>
+                        </td>
+                        <td className="py-2 px-4 text-muted-foreground">
+                          {new Date(invite.created_at).toLocaleDateString()}
+                        </td>
+                        <td className="py-2 px-4 text-muted-foreground">
+                          {new Date(invite.expires_at).toLocaleDateString()}
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Users List */}
       <Card>

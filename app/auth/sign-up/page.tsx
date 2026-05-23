@@ -7,10 +7,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
-import type { UserRole } from '@/lib/types'
 
 export const dynamic = 'force-dynamic'
 
@@ -18,7 +16,6 @@ export default function SignUpPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [fullName, setFullName] = useState('')
-  const [role, setRole] = useState<UserRole>('student')
   const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const supabase = createClient()
@@ -36,7 +33,7 @@ export default function SignUpPage() {
           `${window.location.origin}/auth/callback`,
         data: {
           full_name: fullName,
-          role: role,
+          role: 'student',
         },
       },
     })
@@ -123,18 +120,6 @@ export default function SignUpPage() {
                 minLength={6}
                 disabled={isLoading}
               />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="role">I want to</Label>
-              <Select value={role} onValueChange={(v) => setRole(v as UserRole)} disabled={isLoading}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select your role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="student">Learn new skills (Student)</SelectItem>
-                  <SelectItem value="instructor">Teach courses (Instructor)</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? (
