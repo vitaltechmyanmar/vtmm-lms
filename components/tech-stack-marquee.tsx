@@ -14,14 +14,12 @@ const techStack = [
   { name: 'bash', label: 'Bash' },
   { name: 'github', label: 'GitHub' },
   { name: 'git', label: 'Git' },
-
-  // Cloud & Infrastructure
+  { name: 'terraform', label: 'Terraform' },
   { name: 'aws', label: 'AWS' },
   { name: 'azure', label: 'Azure' },
   { name: 'vercel', label: 'Vercel' },
-
-  // Analytics & Monitoring
   { name: 'grafana', label: 'Grafana' },
+  { name: 'snyk', label: 'Snyk' },
 ]
 
 export function TechStackMarquee() {
