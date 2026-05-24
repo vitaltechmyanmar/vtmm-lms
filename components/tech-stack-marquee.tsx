@@ -4,67 +4,24 @@ import TechIcon from 'tech-stack-icons'
 
 // Non-programming tools: AI, design, productivity, cloud, databases
 const techStack = [
-  // AI & ML Tools
-  { name: 'openai',      label: 'OpenAI' },
-  { name: 'anthropic',   label: 'Anthropic' },
-  { name: 'gemini',      label: 'Gemini' },
-  { name: 'claude',      label: 'Claude' },
-  { name: 'deepseek',    label: 'DeepSeek' },
-  { name: 'huggingface', label: 'Hugging Face' },
-  { name: 'mistral',     label: 'Mistral' },
-  { name: 'perplexity',  label: 'Perplexity' },
-  { name: 'copilotms',   label: 'Copilot' },
-  { name: 'meta',        label: 'Meta AI' },
-
-  // Design Tools
-  { name: 'figma',       label: 'Figma' },
-  { name: 'canva',       label: 'Canva' },
-  { name: 'photoshop',   label: 'Photoshop' },
-  { name: 'framer',      label: 'Framer' },
-  { name: 'sketch',      label: 'Sketch' },
-  { name: 'invision',    label: 'InVision' },
-  { name: 'xd',          label: 'Adobe XD' },
-  { name: 'adobe',       label: 'Adobe' },
-  { name: 'affinity',    label: 'Affinity' },
-  { name: 'miro',        label: 'Miro' },
-
-  // Productivity & Collaboration
-  { name: 'notion',      label: 'Notion' },
-  { name: 'slack',       label: 'Slack' },
-  { name: 'trello',      label: 'Trello' },
-  { name: 'airtable',    label: 'Airtable' },
-  { name: 'asana',       label: 'Asana' },
-  { name: 'jira',        label: 'Jira' },
-  { name: 'linear',      label: 'Linear' },
-  { name: 'clickup',     label: 'ClickUp' },
-  { name: 'zapier',      label: 'Zapier' },
-  { name: 'atlassian',   label: 'Atlassian' },
+  // DevOps
+  { name: 'linux', label: 'Linux' },
+  { name: 'docker', label: 'Docker' },
+  { name: 'kubernetes', label: 'Kubernetes' },
+  { name: 'gitlab', label: 'GitLab' },
+  { name: 'rancher', label: 'Rancher' },
+  { name: 'redhat', label: 'Redhat' },
+  { name: 'bash', label: 'Bash' },
+  { name: 'github', label: 'GitHub' },
+  { name: 'git', label: 'Git' },
 
   // Cloud & Infrastructure
-  { name: 'aws',         label: 'AWS' },
-  { name: 'azure',       label: 'Azure' },
-  { name: 'gcloud',      label: 'Google Cloud' },
-  { name: 'vercel',      label: 'Vercel' },
-  { name: 'netlify',     label: 'Netlify' },
-  { name: 'digitalocean',label: 'DigitalOcean' },
-  { name: 'cloudflare',  label: 'Cloudflare' },
-  { name: 'supabase',    label: 'Supabase' },
-  { name: 'firebase',    label: 'Firebase' },
-  { name: 'stripe',      label: 'Stripe' },
-
-  // Databases & Storage
-  { name: 'postgresql',  label: 'PostgreSQL' },
-  { name: 'mongodb',     label: 'MongoDB' },
-  { name: 'mysql',       label: 'MySQL' },
-  { name: 'redis',       label: 'Redis' },
-  { name: 'snowflake',   label: 'Snowflake' },
+  { name: 'aws', label: 'AWS' },
+  { name: 'azure', label: 'Azure' },
+  { name: 'vercel', label: 'Vercel' },
 
   // Analytics & Monitoring
-  { name: 'analytics',   label: 'Analytics' },
-  { name: 'datadog',     label: 'Datadog' },
-  { name: 'amplitude',   label: 'Amplitude' },
-  { name: 'sentry',      label: 'Sentry' },
-  { name: 'grafana',     label: 'Grafana' },
+  { name: 'grafana', label: 'Grafana' },
 ]
 
 export function TechStackMarquee() {
