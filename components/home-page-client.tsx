@@ -33,7 +33,7 @@ import MenuBookIcon from '@mui/icons-material/MenuBook'
 import StorageIcon from '@mui/icons-material/Storage'
 import CallSplitIcon from '@mui/icons-material/CallSplit'
 import CloudIcon from '@mui/icons-material/Cloud'
-import ViewInArIcon from '@mui/icons-material/ViewInAr'
+import WidgetsIcon from '@mui/icons-material/Widgets'
 import MonitorHeartIcon from '@mui/icons-material/MonitorHeart'
 import { MuiThemeProvider } from '@/components/mui-theme-provider'
 import { TechStackMarquee } from '@/components/tech-stack-marquee'
@@ -62,7 +62,7 @@ const learningPaths = [
     bg: 'rgba(100,116,139,0.08)',
   },
   {
-    Icon: ViewInArIcon,
+    Icon: WidgetsIcon,
     title: 'Containers & Orchestration',
     desc: 'Docker, Kubernetes, Helm, container security and CI/CD pipelines',
     tags: ['Docker', 'K8s', 'Helm'],
