@@ -1,264 +1,208 @@
-# EduFlow Setup Checklist
+# Vital Tech LearnHub — Setup Checklist
 
-Use this checklist to ensure EduFlow is properly set up and ready for deployment.
+Use this checklist to ensure the LMS is properly configured and ready for launch.
 
-## Prerequisites
-- [ ] Node.js 18+ installed
-- [ ] npm/yarn/pnpm installed
+---
+
+## 1. Prerequisites
+
+- [ ] Node.js 18+ installed (`node --version`)
+- [ ] pnpm installed (`npm i -g pnpm`)
 - [ ] Git installed
-- [ ] GitHub account created
-- [ ] Supabase account created
-- [ ] Vercel account created
+- [ ] Supabase account created at [supabase.com](https://supabase.com)
+- [ ] Resend account created at [resend.com](https://resend.com)
+- [ ] Vercel account created at [vercel.com](https://vercel.com)
+- [ ] GitHub repository created
 
-## Local Development Setup
+---
 
-### Repository Setup
-- [ ] Repository cloned locally: `git clone <repo-url>`
-- [ ] Navigated to project directory: `cd v0-project`
-- [ ] Dependencies installed: `npm install`
+## 2. Supabase Configuration
 
-### Environment Configuration
-- [ ] `.env.local` file created in project root
-- [ ] Added `NEXT_PUBLIC_SUPABASE_URL`
-- [ ] Added `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- [ ] Added `SUPABASE_SERVICE_ROLE_KEY`
-- [ ] Added `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`
-- [ ] Added `STRIPE_SECRET_KEY`
-- [ ] Added `STRIPE_WEBHOOK_SECRET`
-- [ ] Added `NEXT_PUBLIC_SITE_URL=http://localhost:3000`
-
-### Supabase Configuration
 - [ ] Supabase project created
-- [ ] Database tables created (automatic upon project creation):
-  - [ ] profiles
-  - [ ] courses
-  - [ ] lessons
-  - [ ] enrollments
-  - [ ] lesson_progress
-  - [ ] payments
-  - [ ] certificates
-  - [ ] discussions
-  - [ ] discussion_replies
-  - [ ] quizzes
-  - [ ] quiz_questions
-  - [ ] quiz_attempts
-- [ ] Email authentication enabled
-- [ ] Email templates customized (optional)
+- [ ] Project URL and API keys noted
+- [ ] Database tables created (via migrations):
+  - [ ] `profiles`
+  - [ ] `courses`
+  - [ ] `lessons`
+  - [ ] `lesson_resources`
+  - [ ] `enrollments`
+  - [ ] `lesson_completions`
+  - [ ] `payments` (includes `payment_proof_url` column)
+  - [ ] `certificates`
+  - [ ] `discussions`
+  - [ ] `discussion_replies`
+  - [ ] `quizzes`
+  - [ ] `quiz_questions`
+  - [ ] `quiz_attempts`
+  - [ ] `categories`
+  - [ ] `instructor_invites`
+- [ ] Storage buckets created:
+  - [ ] `course-covers` (public)
+  - [ ] `lesson-resources` (public)
+  - [ ] `payment-proofs` (private, RLS enforced)
+- [ ] RLS policies enabled on all tables
+- [ ] `get_course_enrollment_count(course_uuid)` security-definer function created
+- [ ] Email authentication enabled (Auth → Providers → Email)
+- [ ] Admin account seeded: `pnpm seed:admin`
 
-### Stripe Configuration
-- [ ] Stripe account created and verified
-- [ ] API keys obtained:
-  - [ ] Publishable key (pk_test_...)
-  - [ ] Secret key (sk_test_...)
-  - [ ] Webhook signing secret (whsec_...)
-- [ ] Test mode enabled for development
+---
 
-### Development Testing
-- [ ] Dev server started: `npm run dev`
-- [ ] Home page loads: http://localhost:3000
-- [ ] Courses page loads: http://localhost:3000/courses
-- [ ] Sign-up page loads: http://localhost:3000/auth/sign-up
-- [ ] Login page loads: http://localhost:3000/auth/login
-- [ ] Create test user account
-- [ ] Verify email in Supabase
-- [ ] Login with test account succeeds
-- [ ] Dashboard loads correctly
+## 3. Environment Variables
 
-## Production Deployment
+Create `.env.local` in the project root and add:
 
-### GitHub Repository
-- [ ] Code committed: `git add . && git commit -m "Initial commit"`
-- [ ] Repository pushed to GitHub: `git push origin main`
-- [ ] Repository is public (or private if preferred)
+- [ ] `NEXT_PUBLIC_SUPABASE_URL`
+- [ ] `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- [ ] `SUPABASE_SERVICE_ROLE_KEY`
+- [ ] `NEXT_PUBLIC_APP_URL` (e.g. `http://localhost:3000`)
+- [ ] `RESEND_API_KEY` — from [resend.com/api-keys](https://resend.com/api-keys)
+- [ ] `EMAIL_FROM` — sender address (e.g. `VT LearnHub <onboarding@resend.dev>`)
+- [ ] `ADMIN_EMAIL` — email that receives enrollment notifications
+- [ ] `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` _(optional — if using Stripe)_
+- [ ] `STRIPE_SECRET_KEY` _(optional)_
+- [ ] `STRIPE_WEBHOOK_SECRET` _(optional)_
 
-### Vercel Deployment
-- [ ] Vercel account linked to GitHub
-- [ ] Project imported to Vercel
-- [ ] Build settings configured:
-  - [ ] Framework: Next.js
-  - [ ] Build command: `npm run build`
-  - [ ] Output directory: `.next`
-- [ ] Environment variables added in Vercel Settings:
-  - [ ] All Supabase variables
-  - [ ] All Stripe variables
-  - [ ] `NEXT_PUBLIC_SITE_URL` set to deployment URL
+---
 
+## 4. Resend Email Setup
 
-### Post-Deployment Verification
-- [ ] Production URL loads: https://your-deployment.vercel.app
-- [ ] Home page displays correctly
-- [ ] Responsive design works on mobile
-- [ ] Sign-up page functional
-- [ ] Email verification works
-- [ ] Login works
-- [ ] Dashboard loads
-- [ ] No console errors
+- [ ] Resend account created
+- [ ] API key generated and added to env
+- [ ] (For production) Custom sending domain verified in Resend dashboard
+- [ ] Update `EMAIL_FROM` in env to use verified domain (e.g. `noreply@vtmm.com`)
+- [ ] Test email delivery by enrolling in a free course
 
-## Feature Testing
+---
+
+## 5. Local Development
+
+- [ ] Dependencies installed: `pnpm install`
+- [ ] Dev server starts: `pnpm dev`
+- [ ] Home page loads: [http://localhost:3000](http://localhost:3000)
+- [ ] Courses page loads with enrollment counts visible
+- [ ] Sign-up page works (student only — no Instructor option)
+- [ ] Admin can invite Instructor via Admin → Users → Invite Instructor
+- [ ] Instructor receives magic link email and can register
+- [ ] Login works for all roles
+- [ ] Dashboard loads with correct role-based UI
+
+---
+
+## 6. Feature Verification
 
 ### Student Features
-- [ ] Browse published courses
-- [ ] View course details
-- [ ] Enroll in free course
-- [ ] Access course learning interface
-- [ ] View lessons
-- [ ] Mark lessons complete
-- [ ] See progress tracking
-- [ ] View dashboard
-- [ ] View my courses
+- [ ] Browse courses — see enrollment count on each card
+- [ ] View course detail — see duration in `Xh Ym` format
+- [ ] Enroll in free course → redirected to learning page
+- [ ] Receive enrollment confirmation email after free enrollment
+- [ ] Learning interface: video embed, lesson content, resources
+- [ ] Mark lessons complete — progress bar updates
+- [ ] Complete course → certificate auto-generated
+- [ ] View certificate at `/dashboard/certificates`
+- [ ] Take quiz and see result
+- [ ] Create/view discussion in course
+- [ ] View payment history at `/dashboard/purchases`
+
+### Paid Course Flow
+- [ ] Paid course shows KBZ / Wave payment dialog
+- [ ] Payment screenshot upload is **required**
+- [ ] Additional notes field is **required**
+- [ ] Payment submitted with `pending` status
+- [ ] Admin sees payment in Payment Approvals page
 
 ### Instructor Features
-- [ ] Access instructor dashboard
-- [ ] View courses overview
-- [ ] Create new course
-- [ ] Add lessons to course
-- [ ] Edit course details
-- [ ] Publish/unpublish courses
-- [ ] View student enrollments
+- [ ] Instructor invited by admin via email invite (not self-signup)
+- [ ] Can create and publish courses
+- [ ] Course duration entered in **hours** (e.g. `1.5` = 1h 30m)
+- [ ] Duration displayed as `Xh Ym` in course detail and learning sidebar
+- [ ] Can add lessons with video, content, and resources
+- [ ] Can create quizzes with multiple-choice questions
+- [ ] Can view course analytics and enrolled students
 
-### Admin Features (if applicable)
-- [ ] Access admin dashboard
-- [ ] View platform statistics
-- [ ] View total users
-- [ ] View total revenue
-- [ ] View recent users
+### Admin Features
+- [ ] Admin dashboard shows platform stats
+- [ ] **Users page**: view all users with enrolled courses collapsible per user
+- [ ] **Unenroll** a student from any course (with confirmation dialog)
+- [ ] **Invite Instructor**: enter name + email → sends magic link
+- [ ] **Payment Approvals**: view, approve, reject KBZ/Wave payments
+  - [ ] Approve → student enrolled + email sent to student
+  - [ ] View payment screenshot in zoom modal
+- [ ] **Categories**: create/edit/delete course categories with colors
+- [ ] **Assignments**: assign instructors to courses
+- [ ] **Analytics**: view revenue chart, enrollment trends, top courses
 
-### Payment Features
-- [ ] Create paid course with price
-- [ ] Add course to dashboard
-- [ ] Initiate payment flow
-- [ ] Complete Stripe test payment (4242 4242 4242 4242)
-- [ ] Verify enrollment created
-- [ ] Check payment in Stripe Dashboard
+### Email Notifications
+- [ ] Student receives email on free course enrollment
+- [ ] Student receives email on paid payment approval
+- [ ] Admin receives notification email on free enrollment
+- [ ] Admin receives notification email on paid payment approval
 
-## Security Checklist
+---
 
-### Authentication
-- [ ] Passwords are hashed securely
-- [ ] Email verification is required
-- [ ] Sessions are secure (HTTP-only cookies)
-- [ ] Middleware protects private routes
-- [ ] Users can only access their own data
+## 7. Vercel Deployment
 
-### Data Protection
-- [ ] Supabase RLS policies are in place
-- [ ] Service role key never exposed in frontend
-- [ ] All user inputs are validated
-- [ ] SQL injection is prevented (parameterized queries)
+- [ ] Code pushed to GitHub
+- [ ] Project imported in Vercel dashboard
+- [ ] Build command: `next build`
+- [ ] All environment variables added in Vercel → Settings → Environment Variables:
+  - [ ] `NEXT_PUBLIC_SUPABASE_URL`
+  - [ ] `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+  - [ ] `SUPABASE_SERVICE_ROLE_KEY`
+  - [ ] `NEXT_PUBLIC_APP_URL` (set to production URL)
+  - [ ] `RESEND_API_KEY`
+  - [ ] `EMAIL_FROM`
+  - [ ] `ADMIN_EMAIL`
+  - [ ] Stripe keys _(if applicable)_
+- [ ] First deployment successful
+- [ ] Production URL is accessible
 
-### Payments
-- [ ] Stripe webhook signature verification works
-- [ ] No sensitive data is logged
-- [ ] Payments are idempotent
-- [ ] Failed payments are handled gracefully
+---
 
-## Performance Checklist
+## 8. Post-Deployment Verification
 
-### Frontend
+- [ ] Home page loads correctly
+- [ ] Course listing shows enrollment counts
+- [ ] Sign-up page has no Instructor option
+- [ ] Admin portal pages load with consistent design
+- [ ] Instructor invite email is received and works
+- [ ] Stripe webhook updated to production URL _(if using Stripe)_
+- [ ] Email delivery tested in production
+- [ ] Payment screenshot upload tested in production
+- [ ] Mobile responsive layout verified
+
+---
+
+## 9. Security Checklist
+
+- [ ] Supabase RLS policies active on all tables
+- [ ] `payment-proofs` storage bucket is **private** (signed URLs only)
+- [ ] `SUPABASE_SERVICE_ROLE_KEY` is never exposed in frontend code
+- [ ] Admin-only routes protected in middleware
+- [ ] Admin API routes verify caller role server-side (`/api/admin/*`)
+- [ ] `.env.local` is in `.gitignore` (never committed)
+
+---
+
+## 10. Performance Checklist
+
 - [ ] Home page loads in < 2 seconds
 - [ ] Course pages load in < 2 seconds
 - [ ] Dashboard loads in < 3 seconds
-- [ ] Mobile performance is good
-- [ ] No layout shift issues
+- [ ] `pnpm run build` completes with 0 TypeScript errors
+- [ ] No console errors on any page
 
-### Backend
-- [ ] Database queries are efficient
-- [ ] No N+1 query problems
-- [ ] API endpoints respond quickly
-- [ ] Webhooks process in < 1 second
-
-## Monitoring Checklist
-
-### Vercel
-- [ ] Deployment logs are accessible
-- [ ] Build errors are monitored
-- [ ] Performance metrics are tracked
-
-### Supabase
-- [ ] Database performance is monitored
-- [ ] Authentication logs are available
-- [ ] API usage is tracked
-
-### Stripe
-- [ ] Payment volume is monitored
-- [ ] Failed payments are tracked
-- [ ] Webhook logs are checked
-
-## Documentation Checklist
-
-- [ ] README.md is complete
-- [ ] DEPLOYMENT.md is updated
-- [ ] PROJECT_SUMMARY.md is accurate
-- [ ] Code comments are clear
-- [ ] Environment variables are documented
-- [ ] API endpoints are documented
-- [ ] Database schema is documented
-
-## Customization Checklist (Optional)
-
-- [ ] Brand colors customized
-- [ ] Fonts customized
-- [ ] Logo added
-- [ ] Home page content updated
-- [ ] Footer content updated
-- [ ] Email templates customized
-- [ ] Terms of Service added
-- [ ] Privacy Policy added
-
-## Launch Checklist
-
-- [ ] All tests pass
-- [ ] No console warnings/errors
-- [ ] All links work correctly
-- [ ] Form validation works
-- [ ] Payment flow tested
-- [ ] Email notifications work
-- [ ] Mobile responsive design verified
-- [ ] Accessibility tested (keyboard navigation, screen readers)
-- [ ] Analytics set up (optional)
-- [ ] Monitoring alerts configured
-- [ ] Backup plan in place
-- [ ] Support documentation ready
-
-## Troubleshooting Reference
-
-If you encounter issues, check:
-
-### Build Errors
-- [ ] All dependencies installed: `npm install`
-- [ ] Node version correct: `node --version`
-- [ ] Environment variables set correctly
-- [ ] No conflicting dependencies
-
-### Runtime Errors
-- [ ] Check browser console for errors
-- [ ] Check server logs in Vercel
-- [ ] Verify database connection
-- [ ] Verify API keys are correct
-
-### Feature Not Working
-- [ ] Check feature implementation status
-- [ ] Verify environment variables
-- [ ] Check browser dev tools
-- [ ] Review server logs
-- [ ] Test with fresh browser session
-
-## Getting Help
-
-1. Check PROJECT_SUMMARY.md for architecture overview
-2. Check DEPLOYMENT.md for detailed setup instructions
-3. Review code comments for implementation details
-4. Check Supabase, Stripe, and Vercel documentation
-5. Review git history for recent changes: `git log --oneline`
+---
 
 ## Sign-off
 
 - [ ] All checklist items completed
-- [ ] Application tested in production
-- [ ] Team is ready to launch
-- [ ] Support plan is in place
-- [ ] Backups are configured
-- [ ] Monitoring is active
+- [ ] All three roles tested (student, instructor, admin)
+- [ ] Email notifications verified end-to-end
+- [ ] Application tested on mobile
+- [ ] Production deployment stable
+- [ ] Team briefed on platform usage
+
+---
 
 Date Completed: _______________
 Completed By: _______________

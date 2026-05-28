@@ -1,243 +1,259 @@
-# Vital Tech LearnHub - Learning Management System
+# Vital Tech LearnHub — Learning Management System
 
-A comprehensive learning management system built with Next.js, Supabase, and Stripe. Designed for instructors to create and manage courses, students to learn and earn certificates, and admins to oversee the platform.
+A full-featured, production-ready Learning Management System built with **Next.js 16**, **Supabase**, and **Myanmar payment methods (KBZ Pay / Wave Money)**. Designed for Vital Tech Myanmar to deliver online courses to students across Myanmar.
 
-## Features
+## ✨ Features
 
-### For Students
-- Browse and enroll in courses
-- Complete lessons with video and text content
-- Track progress through courses
-- Earn certificates upon completion
-- Participate in course discussions
-- View enrolled courses and learning history
+### 🎓 For Students
+- Browse published courses with category & level filters
+- View public enrollment counts on every course card
+- Enroll in **free courses** instantly
+- Pay for **paid courses** via KBZ Pay or Wave Money
+- Upload payment screenshot and add notes with payment submission
+- Receive **email confirmation** immediately upon enrollment
+- Access course learning interface with video, text content, and resources
+- Track lesson progress with visual progress bar
+- Take lesson **quizzes** and view attempt history
+- Earn **certificates** automatically upon course completion
+- Participate in **course discussions** (create threads, reply)
+- View purchased course history and payment status
+- Manage profile and account settings
 
-### For Instructors
-- Create and publish courses
-- Add video lessons with descriptions
-- Manage student enrollments
+### 📚 For Instructors
+- Receive instructor role **only via admin email invite** (not self-signup)
+- Create, edit, and publish courses
+- Add lessons with video URLs, text content, and file resources
+- Set course **duration in hours** (e.g. `1.5` → stored as 90 minutes, displayed as `1h 30m`)
+- Set lesson duration per lesson
+- Build **quizzes** with multiple-choice questions and passing score thresholds
+- View student enrollments and analytics
 - Track course performance and revenue
-- View student progress and analytics
-- Edit and update courses anytime
 
-### For Admins
-- Monitor platform statistics
-- Manage users and roles
-- View system-wide analytics
-- Manage courses and content
-- Handle support and moderation
+### 🛡️ For Admins
+- **Admin Portal** with consistent premium design across all pages
+- Invite instructors via email (magic link + role assignment)
+- Manage all users — view roles, joined date, and enrollments
+- **Unenroll any student** from any course with one click (confirmation dialog)
+- Approve or reject **manual payments** (KBZ / Wave)
+  - View payment screenshot in zoomed modal
+  - On approval: student is automatically enrolled + **email sent**
+- Manage **course categories** with colors and ordering
+- Assign instructors to courses
+- View platform analytics: revenue, enrollment trends, top courses
+- View all payments with search and status filter
 
-## Tech Stack
+---
 
-- **Frontend**: Next.js 16, React 19, TailwindCSS
-- **Backend**: Next.js API Routes, Server Actions
-- **Database**: Supabase (PostgreSQL)
-- **Authentication**: Supabase Auth
-- **Payments**: Stripe
-- **Deployment**: Vercel
+## 🗄️ Database Schema
 
-## Database Schema
+| Table | Description |
+|---|---|
+| `profiles` | User accounts — roles: `student`, `instructor`, `admin` |
+| `courses` | Course metadata, pricing, thumbnail, category, level |
+| `lessons` | Individual lessons with video, content, duration |
+| `lesson_resources` | File/link/slide/note attachments per lesson |
+| `enrollments` | Student ↔ Course enrollment records |
+| `lesson_completions` | Per-lesson completion tracking |
+| `payments` | Payment records — supports KBZ, Wave, Stripe |
+| `certificates` | Auto-generated on course completion |
+| `discussions` | Course discussion threads |
+| `discussion_replies` | Replies to discussion threads |
+| `quizzes` | Quiz linked to a lesson |
+| `quiz_questions` | Multiple-choice questions |
+| `quiz_attempts` | Student quiz attempt history |
+| `categories` | Course categories with color + icon |
+| `instructor_invites` | Email invite tokens for instructor onboarding |
 
-### Tables
-- `profiles` - User profiles and roles (student, instructor, admin)
-- `courses` - Course information and metadata
-- `lessons` - Individual lessons within courses
-- `enrollments` - Student enrollments in courses
-- `lesson_progress` - Track student progress on lessons
-- `payments` - Payment records and Stripe integration
-- `certificates` - Earned certificates
-- `discussions` - Course discussions
-- `discussion_replies` - Replies to discussions
-- `quiz_questions` - Quiz questions
-- `quizzes` - Course quizzes
-- `quiz_attempts` - Student quiz attempts
+---
 
-## Getting Started
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 16 (App Router, Turbopack) |
+| UI | React 19, Tailwind CSS v4, shadcn/ui |
+| Database | Supabase (PostgreSQL + RLS) |
+| Auth | Supabase Auth (email/password, magic links) |
+| Storage | Supabase Storage (payment proofs, course covers, resources) |
+| Email | [Resend](https://resend.com) — enrollment confirmations & admin alerts |
+| Payments | Myanmar manual payments (KBZ Pay, Wave Money) + Stripe (optional) |
+| Deployment | Vercel |
+
+---
+
+## 🚀 Getting Started
 
 ### Prerequisites
 - Node.js 18+
-- npm, yarn, pnpm, or bun
-- Supabase account
-- Stripe account
+- pnpm (recommended) or npm
+- Supabase project
+- Resend account (free tier: 3,000 emails/month)
+- Vercel account for deployment
 
-### Installation
+### 1. Clone & Install
 
-1. Clone the repository
 ```bash
 git clone <repository-url>
-cd v0-project
+cd vtmm-lms
+pnpm install
 ```
 
-2. Install dependencies
+### 2. Environment Variables
+
+Create `.env.local` in the project root:
+
+```env
+# ── Supabase ──────────────────────────────────────────────
+NEXT_PUBLIC_SUPABASE_URL=https://xxxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJxxx...
+SUPABASE_SERVICE_ROLE_KEY=eyJxxx...
+
+# ── App ───────────────────────────────────────────────────
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+
+# ── Email (Resend) ────────────────────────────────────────
+RESEND_API_KEY=re_xxxxxxxxxxxxxxxx
+EMAIL_FROM=VT LearnHub <onboarding@resend.dev>
+ADMIN_EMAIL=admin@yourdomain.com
+
+# ── Stripe (optional) ─────────────────────────────────────
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_xxx
+STRIPE_SECRET_KEY=sk_test_xxx
+STRIPE_WEBHOOK_SECRET=whsec_xxx
+```
+
+### 3. Run Development Server
+
 ```bash
-npm install
+pnpm dev
 ```
 
-3. Set up environment variables
-Create a `.env.local` file with:
-```
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
-NEXT_PUBLIC_SITE_URL=your_site_url
+Visit [http://localhost:3000](http://localhost:3000)
 
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
-STRIPE_SECRET_KEY=your_stripe_secret_key
-STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
-```
+---
 
-4. Run the development server
-```bash
-npm run dev
-```
+## 📁 Project Structure
 
-Visit http://localhost:3000 to see the application.
-
-## Key Pages
-
-### Public Pages
-- `/` - Home page with platform overview
-- `/courses` - Browse all published courses
-- `/courses/[courseId]` - Course detail page
-- `/auth/login` - User login
-- `/auth/sign-up` - User registration
-
-### Authenticated Pages
-- `/dashboard` - Main dashboard (role-based)
-  - Students: Enrolled courses and progress
-  - Instructors: Course management
-  - Admins: Platform overview
-
-### Student Pages
-- `/dashboard/my-courses` - All enrolled courses
-- `/courses/[courseId]/learn` - Course learning interface
-- `/dashboard/certificates` - Earned certificates
-
-### Instructor Pages
-- `/dashboard/courses` - Course management
-- `/dashboard/courses/new` - Create new course
-- `/dashboard/courses/[courseId]` - Edit course
-
-### Admin Pages
-- `/dashboard/admin/users` - User management
-- `/dashboard/admin/analytics` - Platform analytics
-
-## API Routes
-
-### Authentication
-- `POST /api/auth/sign-up` - Register new user
-- `POST /api/auth/sign-in` - User login
-- `POST /api/auth/sign-out` - User logout
-- `POST /api/auth/callback` - Email verification callback
-
-### Payments
-- `POST /api/stripe/create-checkout` - Create checkout session
-- `POST /api/webhooks/stripe` - Handle Stripe webhooks
-
-### Course Operations
-- `GET /api/courses` - List courses
-- `POST /api/courses` - Create course (instructor only)
-- `GET /api/courses/[id]` - Get course detail
-- `PUT /api/courses/[id]` - Update course (instructor only)
-
-## Server Actions
-
-All data operations use Next.js Server Actions for security:
-
-### Auth Actions (`app/actions/auth.ts`)
-- `signUp()` - Register user
-- `signIn()` - Login user
-- `signOut()` - Logout user
-- `getUser()` - Get current user
-
-### Database Actions (`app/actions/db.ts`)
-- `getCourses()` - Fetch courses with filters
-- `getCourseDetail()` - Get full course with lessons
-- `getStudentEnrollments()` - Get student's courses
-- `createCourse()` - Create new course
-- `createLesson()` - Add lesson to course
-- `markLessonComplete()` - Track student progress
-- `getAllUsers()` - Admin: Get all users
-- `getEnrollmentStats()` - Admin: Platform stats
-
-### Stripe Actions (`app/actions/stripe.ts`)
-- `createCourseCheckoutSession()` - Initialize payment
-
-## Deployment
-
-### Deploy to Vercel
-
-1. Push your code to GitHub
-2. Connect your repository to Vercel
-3. Add environment variables in Vercel project settings
-4. Configure Stripe webhook URL: `https://your-domain.com/api/webhooks/stripe`
-5. Deploy!
-
-## Development
-
-### Project Structure
 ```
 ├── app/
-│   ├── api/                    # API routes
-│   ├── auth/                   # Auth pages
-│   ├── courses/                # Course pages
-│   ├── dashboard/              # Dashboard pages
-│   ├── actions/                # Server actions
-│   ├── layout.tsx              # Root layout
-│   └── page.tsx                # Home page
+│   ├── api/
+│   │   ├── admin/
+│   │   │   ├── invite-instructor/   # Send instructor email invite
+│   │   │   └── unenroll/            # Admin force-unenroll a student
+│   │   ├── send-enrollment-email/   # Email trigger after enrollment
+│   │   ├── upload/
+│   │   │   ├── course-cover/        # Upload course thumbnail
+│   │   │   ├── lesson-resource/     # Upload lesson attachments
+│   │   │   └── payment-proof/       # Upload payment screenshot
+│   │   └── webhooks/stripe/         # Stripe webhook handler
+│   ├── auth/                        # Login, sign-up, password reset
+│   ├── courses/                     # Public course browse + detail
+│   ├── dashboard/
+│   │   ├── admin/                   # Admin portal pages
+│   │   │   ├── analytics/
+│   │   │   ├── assignments/         # Assign instructors to courses
+│   │   │   ├── categories/
+│   │   │   ├── courses/
+│   │   │   ├── payments/            # Manual payment approvals
+│   │   │   └── users/               # User management + unenroll
+│   │   ├── courses/                 # Instructor course management
+│   │   ├── my-courses/              # Student enrolled courses
+│   │   ├── certificates/
+│   │   ├── discussions/
+│   │   ├── purchases/               # Student payment history
+│   │   └── settings/
+│   └── actions/                     # Server actions (db.ts, stripe.ts, auth.ts)
 ├── components/
-│   ├── ui/                     # Shadcn UI components
-│   ├── dashboard/              # Dashboard components
-│   ├── checkout.tsx            # Stripe checkout
-│   └── course-*.tsx            # Course components
+│   ├── ui/                          # shadcn/ui base components
+│   ├── dashboard/                   # Course editor, admin panels
+│   ├── checkout.tsx                 # Myanmar payment checkout dialog
+│   ├── course-enroll-button.tsx     # Smart enroll button (free/paid/enrolled)
+│   ├── course-learning-view.tsx     # Full learning interface
+│   └── course-reviews.tsx           # Student reviews
 ├── lib/
-│   ├── supabase/               # Supabase client setup
-│   ├── stripe.ts               # Stripe initialization
-│   └── types.ts                # TypeScript types
-├── public/                     # Static assets
-└── styles/                     # Global styles
+│   ├── supabase/                    # Supabase client (client.ts, server.ts)
+│   ├── email.ts                     # Resend email helpers
+│   ├── duration.ts                  # Duration format (minutes → "1h 15m")
+│   ├── format-currency.ts           # MMK formatting
+│   └── types.ts                     # TypeScript types
+└── public/                          # Static assets (logo, etc.)
 ```
 
-### Running Tests
-```bash
-npm run test
-```
+---
 
-### Building for Production
-```bash
-npm run build
-npm start
-```
+## 🔄 Key Flows
 
-## Authentication Flow
+### Instructor Onboarding
+1. Admin goes to **Admin → Users** and clicks **Invite Instructor**
+2. Enters instructor's email and full name
+3. Supabase sends a magic link email
+4. Instructor clicks link, sets password, and is automatically given `instructor` role
+5. Instructor can now create and manage courses
 
-1. User signs up with email/password
-2. Supabase sends verification email
-3. User clicks verification link
-4. User is redirected to login page
-5. User logs in and is authenticated
-6. User profile is created in `profiles` table
+### Free Course Enrollment
+1. Student clicks **Enroll for Free** on course page
+2. Enrollment is created instantly
+3. Student receives **email confirmation** via Resend
+4. Admin receives **new enrollment notification**
+5. Student is redirected to the course learning page
 
-## Payment Flow
+### Paid Course Enrollment
+1. Student clicks **Enroll Now — Pay via KBZ / Wave**
+2. Payment dialog opens: student selects KBZ Pay or Wave Money
+3. Student transfers money to displayed account number
+4. Student fills in: Transaction ID, Sender Name, **Payment Screenshot** (required), **Additional Notes** (required)
+5. Payment record created with `pending` status
+6. Admin receives payment in **Admin → Payment Approvals**
+7. Admin reviews screenshot and approves or rejects
+8. On approval: enrollment created → student receives **email confirmation**
 
-1. Student selects paid course and clicks "Enroll"
-2. Stripe checkout session is created
-3. Payment information is captured in Stripe
-4. Webhook confirms payment completion
-5. Student enrollment is automatically created
-6. Student gains access to course
+### Course Completion & Certificates
+1. Student completes all lessons (clicking "Mark Complete")
+2. Progress reaches 100%
+3. Certificate automatically generated with unique certificate number
+4. Certificate available at `/dashboard/certificates`
 
-## Course Completion & Certificates
+---
 
-1. Student completes all lessons in course
-2. System marks course as completed
-3. Certificate is automatically generated
-4. Certificate is available in student's dashboard
+## 📧 Email Notifications
 
-## Support
+Emails are sent via [Resend](https://resend.com):
 
-For issues and feature requests, please open an issue on GitHub or contact support.
+| Trigger | Recipient | Content |
+|---|---|---|
+| Free course enrollment | Student | Enrollment confirmation + course link |
+| Paid payment approved | Student | Payment confirmed + course link |
+| Free course enrollment | Admin | New enrollment notification |
+| Paid payment approved | Admin | Payment approved + amount |
 
-## License
+---
 
-MIT License - see LICENSE file for details.
+## 🏗️ Admin Panel Features
+
+| Page | Route | Description |
+|---|---|---|
+| Dashboard | `/dashboard` | Platform stats overview |
+| Users | `/dashboard/admin/users` | All users, roles, + per-user unenroll |
+| Courses | `/dashboard/admin/courses` | All courses management |
+| Categories | `/dashboard/admin/categories` | Course categories with colors |
+| Assignments | `/dashboard/admin/assignments` | Assign instructors to courses |
+| Payments | `/dashboard/admin/payments` | Approve/reject KBZ & Wave payments |
+| Analytics | `/dashboard/admin/analytics` | Revenue, enrollment trends |
+
+---
+
+## 🚢 Deployment to Vercel
+
+1. Push code to GitHub
+2. Import project in [Vercel Dashboard](https://vercel.com)
+3. Add all environment variables (see section above)
+4. Add Stripe webhook endpoint: `https://your-domain.com/api/webhooks/stripe`
+5. Deploy — Vercel auto-deploys on every `git push`
+
+> **Tip:** Use `pnpm run build` locally to catch TypeScript/build errors before pushing.
+
+---
+
+## 📄 License
+
+MIT License — see LICENSE file for details.
