@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Users, UserCheck, Shield, Mail, UserPlus } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { InviteInstructorDialog } from './invite-instructor-dialog'
+import { UserEnrollments } from './user-enrollments'
 
 export default async function AdminUsersPage() {
   const supabase = await createClient()
@@ -166,7 +167,12 @@ export default async function AdminUsersPage() {
                         <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white ${roleAvatar[profile.role] || 'bg-muted-foreground'}`}>
                           {(profile.full_name?.charAt(0) || profile.email.charAt(0)).toUpperCase()}
                         </div>
-                        <span className="font-medium">{profile.full_name || 'User'}</span>
+                        <div>
+                          <span className="font-medium">{profile.full_name || 'User'}</span>
+                          <div className="mt-1">
+                            <UserEnrollments userId={profile.id} userName={profile.full_name || profile.email} />
+                          </div>
+                        </div>
                       </div>
                     </td>
                     <td className="py-3 px-6 text-muted-foreground">{profile.email}</td>

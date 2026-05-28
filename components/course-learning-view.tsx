@@ -26,6 +26,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { QuizPlayer } from '@/components/quiz-player'
+import { formatDuration } from '@/lib/duration'
 import type { Course, Lesson, Enrollment, Quiz, QuizQuestion, QuizAttempt } from '@/lib/types'
 
 interface CourseLearningViewProps {
@@ -252,7 +253,7 @@ export function CourseLearningView({
                         </p>
                         {lesson.duration_minutes > 0 && (
                           <p className={`text-xs ${isCurrent ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
-                            {lesson.duration_minutes} min
+                            {formatDuration(lesson.duration_minutes)}
                           </p>
                         )}
                       </div>

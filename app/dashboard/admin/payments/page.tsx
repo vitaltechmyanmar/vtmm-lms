@@ -148,6 +148,17 @@ export default function AdminPaymentsPage() {
       toast.warning('Payment approved but enrollment sync failed: ' + enrollErr.message)
     } else {
       toast.success('✅ Payment approved! User enrolled in course.')
+
+      // Send enrollment confirmation email (fire-and-forget)
+      fetch('/api/send-enrollment-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: payment.user_id,
+          courseId: payment.course_id,
+          type: 'paid',
+        }),
+      }).catch(() => {})
     }
 
     setProcessing(null)

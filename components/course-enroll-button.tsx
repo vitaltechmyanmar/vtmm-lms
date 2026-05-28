@@ -66,6 +66,14 @@ export function CourseEnrollButton({
     }
 
     toast.success('Successfully enrolled!')
+
+    // Send enrollment confirmation email (fire-and-forget)
+    fetch('/api/send-enrollment-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ courseId, type: 'free' }),
+    }).catch(() => {})
+
     router.push(`/courses/${courseId}/learn`)
     router.refresh()
   }

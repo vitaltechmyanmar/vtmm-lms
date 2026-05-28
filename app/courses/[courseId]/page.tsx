@@ -8,6 +8,7 @@ import { CourseEnrollButton } from '@/components/course-enroll-button'
 import { MobileNav } from '@/components/mobile-nav'
 import { getCourseEnrollmentCount } from '@/app/actions/db'
 import { formatMMK } from '@/lib/format-currency'
+import { formatDuration } from '@/lib/duration'
 import { CourseReviews } from '@/components/course-reviews'
 
 interface CourseDetailPageProps {
@@ -117,7 +118,7 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
                 </span>
                 <span className="flex items-center gap-1">
                   <Clock className="h-4 w-4" />
-                  {totalDuration} minutes
+                  {formatDuration(totalDuration)}
                 </span>
                 <span className="flex items-center gap-1">
                   <Users className="h-4 w-4" />
@@ -194,7 +195,7 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
               <CardHeader>
                 <CardTitle>Course Content</CardTitle>
                 <p className="text-sm text-muted-foreground">
-                  {sortedLessons.length} lessons • {totalDuration} minutes total
+                  {sortedLessons.length} lessons • {formatDuration(totalDuration)} total
                 </p>
               </CardHeader>
               <CardContent>
@@ -212,7 +213,7 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
                           <h4 className="font-medium">{lesson.title}</h4>
                           {lesson.duration_minutes > 0 && (
                             <p className="text-sm text-muted-foreground">
-                              {lesson.duration_minutes} min
+                              {formatDuration(lesson.duration_minutes)}
                             </p>
                           )}
                         </div>

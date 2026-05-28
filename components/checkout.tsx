@@ -4,6 +4,7 @@ import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
+import { formatDuration } from '@/lib/duration'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -294,7 +295,7 @@ export function MyanmarPaymentCheckout({
 
           {/* Screenshot Upload */}
           <div className="space-y-2">
-            <Label>Payment Screenshot (Optional)</Label>
+            <Label>Payment Screenshot (Required)</Label>
             {screenshotPreview ? (
               <div className="relative inline-block">
                 <img
@@ -333,7 +334,7 @@ export function MyanmarPaymentCheckout({
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="notes">Additional Notes (Optional)</Label>
+            <Label htmlFor="notes">Additional Notes (Required)</Label>
             <Textarea
               id="notes"
               placeholder="Any additional info for admin..."
@@ -348,7 +349,7 @@ export function MyanmarPaymentCheckout({
           <Button
             className="flex-1"
             onClick={handleSubmitPayment}
-            disabled={isSubmitting || isUploading || !transactionId.trim() || !senderName.trim()}
+            disabled={isSubmitting || isUploading || !transactionId.trim() || !senderName.trim() || !screenshotFile || !notes.trim()}
           >
             {isSubmitting || isUploading ? (
               <>

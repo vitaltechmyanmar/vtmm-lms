@@ -8,7 +8,6 @@ Use this checklist to ensure EduFlow is properly set up and ready for deployment
 - [ ] Git installed
 - [ ] GitHub account created
 - [ ] Supabase account created
-- [ ] Stripe account created (or sign-up page opened)
 - [ ] Vercel account created
 
 ## Local Development Setup
@@ -84,13 +83,6 @@ Use this checklist to ensure EduFlow is properly set up and ready for deployment
   - [ ] All Stripe variables
   - [ ] `NEXT_PUBLIC_SITE_URL` set to deployment URL
 
-### Stripe Webhook Configuration
-- [ ] Webhook endpoint URL updated in Stripe Dashboard
-- [ ] Format: `https://your-deployment.vercel.app/api/webhooks/stripe`
-- [ ] Events selected:
-  - [ ] checkout.session.completed
-  - [ ] checkout.session.expired
-- [ ] Webhook signed with secret
 
 ### Post-Deployment Verification
 - [ ] Production URL loads: https://your-deployment.vercel.app
