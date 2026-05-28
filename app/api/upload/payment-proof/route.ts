@@ -47,6 +47,10 @@ export async function POST(req: NextRequest) {
     const arrayBuffer = await file.arrayBuffer()
     const buffer = Buffer.from(arrayBuffer)
 
+    if (fileName.includes('..')) {
+      throw new Error('Invalid file name')
+    }
+
     const { error: uploadError } = await adminClient.storage
       .from('payment-proofs')
       .upload(fileName, buffer, {

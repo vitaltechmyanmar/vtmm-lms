@@ -104,6 +104,9 @@ export default function AdminPaymentsPage() {
   useEffect(() => { fetchPayments() }, [statusFilter])
 
   async function getSignedUrl(path: string): Promise<string> {
+    if (path.includes('..')) {
+      throw new Error('Invalid path')
+    }
     const { data } = await supabase.storage
       .from('payment-proofs')
       .createSignedUrl(path, 60 * 5) // 5-minute signed URL
