@@ -158,3 +158,125 @@ export async function sendAdminEnrollmentNotification({
     return { success: false, error: err }
   }
 }
+
+// ── New: instant admin alert when a student submits a PENDING payment ──────────
+export async function sendAdminPaymentPendingAlert({
+  studentName,
+  studentEmail,
+  courseName,
+  amount,
+  paymentMethod,
+  transactionId,
+  senderName,
+  notes,
+}: {
+  studentName: string
+  studentEmail: string
+  courseName: string
+  amount: string
+  paymentMethod: string
+  transactionId: string
+  senderName: string
+  notes: string
+}) {
+  const adminUrl = `${APP_URL}/dashboard/admin/payments`
+
+  const html = `
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head>
+<body style="margin:0;padding:0;background:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 16px;">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+        <!-- Header -->
+        <tr>
+          <td style="background:linear-gradient(135deg,#d97706,#b45309);padding:32px 40px;">
+            <p style="margin:0;font-size:22px;font-weight:700;color:#fff;">⏳ New Payment Pending Verification</p>
+            <p style="margin:6px 0 0;font-size:13px;color:rgba(255,255,255,0.85);">VT LearnHub — Admin Action Required</p>
+          </td>
+        </tr>
+        <!-- Body -->
+        <tr>
+          <td style="padding:36px 40px;">
+            <p style="margin:0 0 20px;font-size:15px;color:#444;line-height:1.6;">
+              A student has submitted a payment and is waiting for your approval.
+            </p>
+            <!-- Info table -->
+            <table style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:28px;">
+              <tr style="border-bottom:1px solid #f0f0f0;">
+                <td style="padding:10px 0;color:#888;width:140px;">Student</td>
+                <td style="padding:10px 0;font-weight:600;color:#111;">${studentName}</td>
+              </tr>
+              <tr style="border-bottom:1px solid #f0f0f0;">
+                <td style="padding:10px 0;color:#888;">Email</td>
+                <td style="padding:10px 0;color:#444;">${studentEmail}</td>
+              </tr>
+              <tr style="border-bottom:1px solid #f0f0f0;">
+                <td style="padding:10px 0;color:#888;">Course</td>
+                <td style="padding:10px 0;font-weight:600;color:#111;">${courseName}</td>
+              </tr>
+              <tr style="border-bottom:1px solid #f0f0f0;">
+                <td style="padding:10px 0;color:#888;">Amount</td>
+                <td style="padding:10px 0;font-weight:700;color:#d97706;">${amount}</td>
+              </tr>
+              <tr style="border-bottom:1px solid #f0f0f0;">
+                <td style="padding:10px 0;color:#888;">Method</td>
+                <td style="padding:10px 0;">${paymentMethod}</td>
+              </tr>
+              <tr style="border-bottom:1px solid #f0f0f0;">
+                <td style="padding:10px 0;color:#888;">Transaction ID</td>
+                <td style="padding:10px 0;font-family:monospace;font-size:13px;">${transactionId}</td>
+              </tr>
+              <tr style="border-bottom:1px solid #f0f0f0;">
+                <td style="padding:10px 0;color:#888;">Sender Name</td>
+                <td style="padding:10px 0;">${senderName}</td>
+              </tr>
+              ${notes ? `
+              <tr>
+                <td style="padding:10px 0;color:#888;vertical-align:top;">Notes</td>
+                <td style="padding:10px 0;color:#555;">${notes}</td>
+              </tr>` : ''}
+            </table>
+            <!-- CTA -->
+            <table width="100%" cellpadding="0" cellspacing="0">
+              <tr>
+                <td>
+                  <a href="${adminUrl}" style="display:inline-block;background:#d97706;color:#fff;text-decoration:none;padding:14px 32px;border-radius:10px;font-size:15px;font-weight:600;">
+                    Review Payment →
+                  </a>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        <!-- Footer -->
+        <tr>
+          <td style="padding:20px 40px;border-top:1px solid #f0f0f0;">
+            <p style="margin:0;font-size:12px;color:#999;">
+              © ${new Date().getFullYear()} Vital Tech Myanmar — VT LearnHub Admin Notification
+            </p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>
+  `.trim()
+
+  try {
+    const { error } = await resend.emails.send({
+      from: FROM,
+      to: ADMIN_EMAIL,
+      subject: `⏳ Payment verification needed — ${studentName} • ${courseName} • ${amount}`,
+      html,
+    })
+    if (error) console.error('[email] sendAdminPaymentPendingAlert error:', error)
+    return { success: !error, error }
+  } catch (err) {
+    console.error('[email] sendAdminPaymentPendingAlert threw:', err)
+    return { success: false, error: err }
+  }
+}
+
