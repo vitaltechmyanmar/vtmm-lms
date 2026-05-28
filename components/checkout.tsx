@@ -1,14 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   CheckCircle2,
   Copy,
@@ -17,6 +15,8 @@ import {
   Phone,
   User,
   Banknote,
+  ImagePlus,
+  X,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatMMK } from '@/lib/format-currency'
@@ -68,6 +68,13 @@ export function MyanmarPaymentCheckout({
   const [notes, setNotes] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+
+  // Screenshot upload state
+  const [screenshotFile, setScreenshotFile] = useState<File | null>(null)
+  const [screenshotPreview, setScreenshotPreview] = useState<string | null>(null)
+  const [isUploading, setIsUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
   const router = useRouter()
   const supabase = createClient()
 
@@ -76,6 +83,55 @@ export function MyanmarPaymentCheckout({
   function copyToClipboard(text: string, label: string) {
     navigator.clipboard.writeText(text)
     toast.success(`${label} copied!`)
+  }
+
+  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (!['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.type)) {
+      toast.error('Please select an image file (JPEG, PNG, WEBP, or GIF)')
+      return
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('File size must be less than 5MB')
+      return
+    }
+
+    setScreenshotFile(file)
+    const reader = new FileReader()
+    reader.onload = (ev) => setScreenshotPreview(ev.target?.result as string)
+    reader.readAsDataURL(file)
+  }
+
+  function removeScreenshot() {
+    setScreenshotFile(null)
+    setScreenshotPreview(null)
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
+  async function uploadScreenshot(): Promise<string | null> {
+    if (!screenshotFile) return null
+    setIsUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', screenshotFile)
+      const res = await fetch('/api/upload/payment-proof', {
+        method: 'POST',
+        body: formData,
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        toast.error(data.error || 'Failed to upload screenshot')
+        return null
+      }
+      return data.path as string
+    } catch {
+      toast.error('Failed to upload screenshot')
+      return null
+    } finally {
+      setIsUploading(false)
+    }
   }
 
   async function handleSubmitPayment() {
@@ -97,15 +153,26 @@ export function MyanmarPaymentCheckout({
       return
     }
 
+    // Upload screenshot if provided
+    let proofPath: string | null = null
+    if (screenshotFile) {
+      proofPath = await uploadScreenshot()
+      if (!proofPath) {
+        setIsSubmitting(false)
+        return
+      }
+    }
+
     // Create a pending payment record
     const { error: paymentError } = await supabase.from('payments').insert({
       user_id: user.id,
       course_id: courseId,
-      amount_in_cents: priceInKyats, // storing as kyats directly
+      amount_in_cents: priceInKyats,
       currency: 'MMK',
       status: 'pending',
-      stripe_checkout_session_id: `${selectedMethod.toUpperCase()}-${transactionId.trim()}`, // reuse field for transaction ref
-      stripe_payment_intent_id: `SENDER:${senderName.trim()}${notes ? ' | NOTE:' + notes : ''}`, // reuse for notes
+      stripe_checkout_session_id: `${selectedMethod.toUpperCase()}-${transactionId.trim()}`,
+      stripe_payment_intent_id: `SENDER:${senderName.trim()}${notes ? ' | NOTE:' + notes : ''}`,
+      payment_proof_url: proofPath,
     })
 
     if (paymentError) {
@@ -225,6 +292,46 @@ export function MyanmarPaymentCheckout({
             />
           </div>
 
+          {/* Screenshot Upload */}
+          <div className="space-y-2">
+            <Label>Payment Screenshot (Optional)</Label>
+            {screenshotPreview ? (
+              <div className="relative inline-block">
+                <img
+                  src={screenshotPreview}
+                  alt="Payment screenshot preview"
+                  className="h-32 w-auto rounded-lg border object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={removeScreenshot}
+                  className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground shadow"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="flex w-full items-center gap-3 rounded-lg border-2 border-dashed border-border p-4 text-sm text-muted-foreground hover:border-primary/50 hover:bg-muted/30 transition-colors"
+              >
+                <ImagePlus className="h-5 w-5 flex-shrink-0" />
+                <div className="text-left">
+                  <p className="font-medium text-foreground">Upload Screenshot</p>
+                  <p className="text-xs">Transfer success screen ၏ screenshot ထည့်ပေးပါ (JPEG, PNG, max 5MB)</p>
+                </div>
+              </button>
+            )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              className="hidden"
+              onChange={handleFileSelect}
+            />
+          </div>
+
           <div className="space-y-1.5">
             <Label htmlFor="notes">Additional Notes (Optional)</Label>
             <Textarea
@@ -241,12 +348,12 @@ export function MyanmarPaymentCheckout({
           <Button
             className="flex-1"
             onClick={handleSubmitPayment}
-            disabled={isSubmitting || !transactionId.trim() || !senderName.trim()}
+            disabled={isSubmitting || isUploading || !transactionId.trim() || !senderName.trim()}
           >
-            {isSubmitting ? (
+            {isSubmitting || isUploading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Submitting...
+                {isUploading ? 'Uploading...' : 'Submitting...'}
               </>
             ) : (
               <>
@@ -256,7 +363,7 @@ export function MyanmarPaymentCheckout({
             )}
           </Button>
           {onCancel && (
-            <Button variant="outline" onClick={onCancel} disabled={isSubmitting}>
+            <Button variant="outline" onClick={onCancel} disabled={isSubmitting || isUploading}>
               Cancel
             </Button>
           )}
@@ -342,7 +449,7 @@ export function MyanmarPaymentCheckout({
         {[
           'Open app',
           `Transfer ${formatMMK(priceInKyats)}`,
-          'Note Txn ID',
+          'Screenshot it',
           'Click "I have paid"',
         ].map((s, i) => (
           <div key={i} className="flex items-center gap-1 min-w-0">

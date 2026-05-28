@@ -23,7 +23,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Switch } from '@/components/ui/switch'
-import { Plus, MoreVertical, Pencil, Trash2, FolderTree, Loader2, ArrowUp, ArrowDown } from 'lucide-react'
+import { Plus, MoreVertical, Pencil, Trash2, FolderTree, Loader2, ArrowUp, ArrowDown, BookOpen, LayoutGrid } from 'lucide-react'
 import { toast } from 'sonner'
 import type { Category } from '@/lib/types'
 
@@ -210,18 +210,31 @@ export default function CategoriesPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Categories</h1>
-          <p className="text-muted-foreground">Manage course categories</p>
-        </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+    <div className="space-y-8">
+      {/* Page Header */}
+      <div className="relative overflow-hidden rounded-2xl border bg-gradient-to-br from-primary/10 via-background to-blue-500/5 p-6 shadow-sm">
+        <div
+          className="pointer-events-none absolute inset-0 opacity-30"
+          style={{
+            backgroundImage: 'linear-gradient(to right,#8882 1px,transparent 1px),linear-gradient(to bottom,#8882 1px,transparent 1px)',
+            backgroundSize: '32px 32px',
+          }}
+        />
+        <div className="relative flex items-start justify-between gap-4 flex-wrap">
+          <div>
+            <div className="mb-2 inline-flex items-center gap-2 rounded-full border bg-background/80 px-3 py-1 text-xs font-medium shadow-sm">
+              <FolderTree className="h-3 w-3 text-primary" />
+              Categories
+            </div>
+            <h1 className="text-3xl font-bold">Categories</h1>
+            <p className="mt-1 text-muted-foreground">Manage and organize course categories.</p>
+          </div>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={openCreateDialog}>
-              <Plus className="mr-2 h-4 w-4" />
-              Add Category
-            </Button>
+              <Button onClick={openCreateDialog}>
+                <Plus className="mr-2 h-4 w-4" />
+                Add Category
+              </Button>
           </DialogTrigger>
           <DialogContent className="max-w-md">
             <DialogHeader>
@@ -323,52 +336,58 @@ export default function CategoriesPage() {
             </form>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       {/* Stats */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Total Categories</CardTitle>
-            <FolderTree className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{categories.length}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Active</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{categories.filter(c => c.is_active).length}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Total Courses</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{categories.reduce((sum, c) => sum + (c.courses_count || 0), 0)}</div>
-          </CardContent>
-        </Card>
+      <div className="grid gap-4 sm:grid-cols-3">
+        <div
+          className="rounded-xl border border-blue-200 dark:border-blue-900 p-5 transition-all hover:shadow-md hover:-translate-y-0.5"
+          style={{ background: 'linear-gradient(135deg,#3b82f611,transparent)' }}
+        >
+          <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/40">
+            <FolderTree className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+          </div>
+          <div className="text-2xl font-bold">{categories.length}</div>
+          <div className="mt-1 text-xs text-muted-foreground font-medium">Total Categories</div>
+        </div>
+        <div
+          className="rounded-xl border border-green-200 dark:border-green-900 p-5 transition-all hover:shadow-md hover:-translate-y-0.5"
+          style={{ background: 'linear-gradient(135deg,#22c55e11,transparent)' }}
+        >
+          <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-green-100 dark:bg-green-900/40">
+            <LayoutGrid className="h-5 w-5 text-green-600 dark:text-green-400" />
+          </div>
+          <div className="text-2xl font-bold">{categories.filter(c => c.is_active).length}</div>
+          <div className="mt-1 text-xs text-muted-foreground font-medium">Active Categories</div>
+        </div>
+        <div
+          className="rounded-xl border border-purple-200 dark:border-purple-900 p-5 transition-all hover:shadow-md hover:-translate-y-0.5"
+          style={{ background: 'linear-gradient(135deg,#a855f711,transparent)' }}
+        >
+          <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-purple-100 dark:bg-purple-900/40">
+            <BookOpen className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+          </div>
+          <div className="text-2xl font-bold">{categories.reduce((sum, c) => sum + (c.courses_count || 0), 0)}</div>
+          <div className="mt-1 text-xs text-muted-foreground font-medium">Total Courses</div>
+        </div>
       </div>
 
       {/* Categories List */}
-      <Card>
-        <CardHeader>
-          <CardTitle>All Categories</CardTitle>
-          <CardDescription>Drag to reorder categories</CardDescription>
+      <Card className="overflow-hidden">
+        <CardHeader className="border-b bg-muted/30 px-6 py-4">
+          <CardTitle className="text-base">All Categories</CardTitle>
+          <CardDescription>Use the arrows to reorder categories.</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
           {categories.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">No categories yet. Create your first category.</p>
+            <p className="text-center text-muted-foreground py-12">No categories yet. Create your first category.</p>
           ) : (
-            <div className="space-y-2">
+            <div className="divide-y">
               {categories.map((category, index) => (
                 <div
                   key={category.id}
-                  className="flex items-center gap-4 rounded-lg border p-4 hover:bg-muted/50"
+                  className="flex items-center gap-4 px-6 py-4 hover:bg-muted/30 transition-colors"
                 >
                   <div className="flex flex-col gap-1">
                     <Button
@@ -408,8 +427,10 @@ export default function CategoriesPage() {
                     <p className="text-sm text-muted-foreground">{category.description}</p>
                   </div>
 
-                  <div className="text-sm text-muted-foreground">
-                    {category.courses_count || 0} courses
+                  <div className="text-sm text-muted-foreground shrink-0">
+                    <span className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium">
+                      {category.courses_count || 0} courses
+                    </span>
                   </div>
 
                   <DropdownMenu>

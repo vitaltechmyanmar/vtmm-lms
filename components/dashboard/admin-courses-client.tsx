@@ -43,6 +43,7 @@ import {
   Search,
   Users,
   Play,
+  GraduationCap,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatMMK } from '@/lib/format-currency'
@@ -122,58 +123,64 @@ export function AdminCoursesClient({ initialCourses }: AdminCoursesClientProps) 
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Course Management</h1>
-          <p className="text-muted-foreground">Manage all courses on the platform</p>
+    <div className="space-y-8">
+      {/* Page Header */}
+      <div className="relative overflow-hidden rounded-2xl border bg-gradient-to-br from-primary/10 via-background to-green-500/5 p-6 shadow-sm">
+        <div
+          className="pointer-events-none absolute inset-0 opacity-30"
+          style={{
+            backgroundImage: 'linear-gradient(to right,#8882 1px,transparent 1px),linear-gradient(to bottom,#8882 1px,transparent 1px)',
+            backgroundSize: '32px 32px',
+          }}
+        />
+        <div className="relative flex items-start justify-between gap-4 flex-wrap">
+          <div>
+            <div className="mb-2 inline-flex items-center gap-2 rounded-full border bg-background/80 px-3 py-1 text-xs font-medium shadow-sm">
+              <BookOpen className="h-3 w-3 text-primary" />
+              Courses
+            </div>
+            <h1 className="text-3xl font-bold">Course Management</h1>
+            <p className="mt-1 text-muted-foreground">Manage all courses on the platform.</p>
+          </div>
+          <Link href="/dashboard/courses/new">
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              New Course
+            </Button>
+          </Link>
         </div>
-        <Link href="/dashboard/courses/new">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            New Course
-          </Button>
-        </Link>
       </div>
 
       {/* Stats */}
       <div className="grid gap-4 sm:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Total Courses</CardTitle>
-            <BookOpen className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{courses.length}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Published</CardTitle>
-            <Eye className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{publishedCount}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Drafts</CardTitle>
-            <EyeOff className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{draftCount}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Total Students</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalStudents}</div>
-          </CardContent>
-        </Card>
+        <div className="rounded-xl border border-blue-200 dark:border-blue-900 p-5 transition-all hover:shadow-md hover:-translate-y-0.5" style={{ background: 'linear-gradient(135deg,#3b82f611,transparent)' }}>
+          <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/40">
+            <BookOpen className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+          </div>
+          <div className="text-2xl font-bold">{courses.length}</div>
+          <div className="mt-1 text-xs text-muted-foreground font-medium">Total Courses</div>
+        </div>
+        <div className="rounded-xl border border-green-200 dark:border-green-900 p-5 transition-all hover:shadow-md hover:-translate-y-0.5" style={{ background: 'linear-gradient(135deg,#22c55e11,transparent)' }}>
+          <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-green-100 dark:bg-green-900/40">
+            <Eye className="h-5 w-5 text-green-600 dark:text-green-400" />
+          </div>
+          <div className="text-2xl font-bold">{publishedCount}</div>
+          <div className="mt-1 text-xs text-muted-foreground font-medium">Published</div>
+        </div>
+        <div className="rounded-xl border border-gray-200 dark:border-gray-700 p-5 transition-all hover:shadow-md hover:-translate-y-0.5" style={{ background: 'linear-gradient(135deg,#6b728011,transparent)' }}>
+          <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800">
+            <EyeOff className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+          </div>
+          <div className="text-2xl font-bold">{draftCount}</div>
+          <div className="mt-1 text-xs text-muted-foreground font-medium">Drafts</div>
+        </div>
+        <div className="rounded-xl border border-purple-200 dark:border-purple-900 p-5 transition-all hover:shadow-md hover:-translate-y-0.5" style={{ background: 'linear-gradient(135deg,#a855f711,transparent)' }}>
+          <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-purple-100 dark:bg-purple-900/40">
+            <GraduationCap className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+          </div>
+          <div className="text-2xl font-bold">{totalStudents}</div>
+          <div className="mt-1 text-xs text-muted-foreground font-medium">Total Students</div>
+        </div>
       </div>
 
       {/* Filters */}

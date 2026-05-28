@@ -1,9 +1,9 @@
 'use client'
 
-import TechIcon from 'tech-stack-icons'
+import TechIcon, { type IconName } from 'tech-stack-icons'
 
 // Non-programming tools: AI, design, productivity, cloud, databases
-const techStack = [
+const techStack: { name: IconName; label: string }[] = [
   // DevOps
   { name: 'linux', label: 'Linux' },
   { name: 'docker', label: 'Docker' },
@@ -50,7 +50,7 @@ export function TechStackMarquee() {
             >
               <div className="flex h-16 w-16 items-center justify-center rounded-xl border bg-background shadow-sm hover:shadow-md transition-shadow p-2">
                 <TechIcon
-                  name={tech.name as any}
+                  name={tech.name}
                   style={{ width: '2.25rem', height: '2.25rem' }}
                 />
               </div>

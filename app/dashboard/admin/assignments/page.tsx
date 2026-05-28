@@ -29,7 +29,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Plus, MoreVertical, Trash2, UserPlus, Loader2, Search, BookOpen, Users } from 'lucide-react'
+import { Plus, MoreVertical, Trash2, UserPlus, Loader2, Search, BookOpen, Users, GraduationCap } from 'lucide-react'
 import { toast } from 'sonner'
 import type { Profile, Course, UserCourseAssignment } from '@/lib/types'
 
@@ -184,20 +184,33 @@ export default function AssignmentsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">User Assignments</h1>
-          <p className="text-muted-foreground">Manually assign users to courses</p>
-        </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Assign User
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-md">
+    <div className="space-y-8">
+      {/* Page Header */}
+      <div className="relative overflow-hidden rounded-2xl border bg-gradient-to-br from-primary/10 via-background to-purple-500/5 p-6 shadow-sm">
+        <div
+          className="pointer-events-none absolute inset-0 opacity-30"
+          style={{
+            backgroundImage: 'linear-gradient(to right,#8882 1px,transparent 1px),linear-gradient(to bottom,#8882 1px,transparent 1px)',
+            backgroundSize: '32px 32px',
+          }}
+        />
+        <div className="relative flex items-start justify-between gap-4 flex-wrap">
+          <div>
+            <div className="mb-2 inline-flex items-center gap-2 rounded-full border bg-background/80 px-3 py-1 text-xs font-medium shadow-sm">
+              <UserPlus className="h-3 w-3 text-primary" />
+              Assignments
+            </div>
+            <h1 className="text-3xl font-bold">User Assignments</h1>
+            <p className="mt-1 text-muted-foreground">Manually assign users to courses.</p>
+          </div>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                Assign User
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle>Assign User to Course</DialogTitle>
               <DialogDescription>
@@ -274,86 +287,73 @@ export default function AssignmentsPage() {
                 </Button>
               </div>
             </form>
-          </DialogContent>
-        </Dialog>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       {/* Stats */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Total Assignments</CardTitle>
-            <UserPlus className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{assignments.length}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Users with Assignments</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {new Set(assignments.map(a => a.user_id)).size}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Courses with Assignments</CardTitle>
-            <BookOpen className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {Object.keys(assignmentsByCourse).length}
-            </div>
-          </CardContent>
-        </Card>
+      <div className="grid gap-4 sm:grid-cols-3">
+        <div className="rounded-xl border border-blue-200 dark:border-blue-900 p-5 transition-all hover:shadow-md hover:-translate-y-0.5" style={{ background: 'linear-gradient(135deg,#3b82f611,transparent)' }}>
+          <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/40">
+            <GraduationCap className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+          </div>
+          <div className="text-2xl font-bold">{assignments.length}</div>
+          <div className="mt-1 text-xs text-muted-foreground font-medium">Total Assignments</div>
+        </div>
+        <div className="rounded-xl border border-purple-200 dark:border-purple-900 p-5 transition-all hover:shadow-md hover:-translate-y-0.5" style={{ background: 'linear-gradient(135deg,#a855f711,transparent)' }}>
+          <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-purple-100 dark:bg-purple-900/40">
+            <Users className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+          </div>
+          <div className="text-2xl font-bold">{new Set(assignments.map(a => a.user_id)).size}</div>
+          <div className="mt-1 text-xs text-muted-foreground font-medium">Users with Access</div>
+        </div>
+        <div className="rounded-xl border border-green-200 dark:border-green-900 p-5 transition-all hover:shadow-md hover:-translate-y-0.5" style={{ background: 'linear-gradient(135deg,#22c55e11,transparent)' }}>
+          <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-green-100 dark:bg-green-900/40">
+            <BookOpen className="h-5 w-5 text-green-600 dark:text-green-400" />
+          </div>
+          <div className="text-2xl font-bold">{Object.keys(assignmentsByCourse).length}</div>
+          <div className="mt-1 text-xs text-muted-foreground font-medium">Courses Assigned</div>
+        </div>
       </div>
 
       {/* Filters */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Search by user or course..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-            <Select value={filterCourse} onValueChange={setFilterCourse}>
-              <SelectTrigger className="w-full sm:w-[200px]">
-                <SelectValue placeholder="Filter by course" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Courses</SelectItem>
-                {courses.map(course => (
-                  <SelectItem key={course.id} value={course.id}>
-                    {course.title}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Search by user or course..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+        <Select value={filterCourse} onValueChange={setFilterCourse}>
+          <SelectTrigger className="w-full sm:w-[200px]">
+            <SelectValue placeholder="Filter by course" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Courses</SelectItem>
+            {courses.map(course => (
+              <SelectItem key={course.id} value={course.id}>
+                {course.title}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
       {/* Assignments List */}
-      <Card>
-        <CardHeader>
-          <CardTitle>All Assignments</CardTitle>
+      <Card className="overflow-hidden">
+        <CardHeader className="border-b bg-muted/30 px-6 py-4">
+          <CardTitle className="text-base">All Assignments</CardTitle>
           <CardDescription>
             {filteredAssignments.length} assignment{filteredAssignments.length !== 1 ? 's' : ''} found
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
           {filteredAssignments.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">
+            <p className="text-center text-muted-foreground py-12">
               {assignments.length === 0 
                 ? 'No assignments yet. Assign your first user to a course.'
                 : 'No assignments match your search criteria.'
@@ -363,46 +363,50 @@ export default function AssignmentsPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b">
-                    <th className="text-left py-3 px-4">User</th>
-                    <th className="text-left py-3 px-4">Course</th>
-                    <th className="text-left py-3 px-4">Assigned</th>
-                    <th className="text-left py-3 px-4">Expires</th>
-                    <th className="text-left py-3 px-4">Notes</th>
-                    <th className="text-right py-3 px-4">Actions</th>
+                  <tr className="border-b bg-muted/20">
+                    <th className="text-left py-3 px-6 font-medium text-muted-foreground">User</th>
+                    <th className="text-left py-3 px-6 font-medium text-muted-foreground">Course</th>
+                    <th className="text-left py-3 px-6 font-medium text-muted-foreground">Assigned</th>
+                    <th className="text-left py-3 px-6 font-medium text-muted-foreground">Expires</th>
+                    <th className="text-left py-3 px-6 font-medium text-muted-foreground">Notes</th>
+                    <th className="text-right py-3 px-6 font-medium text-muted-foreground">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredAssignments.map((assignment) => (
-                    <tr key={assignment.id} className="border-b hover:bg-muted/50">
-                      <td className="py-3 px-4">
+                    <tr key={assignment.id} className="border-b hover:bg-muted/30 transition-colors">
+                      <td className="py-3 px-6">
                         <div>
                           <div className="font-medium">{assignment.user?.full_name || 'Unknown'}</div>
                           <div className="text-muted-foreground text-xs">{assignment.user?.email}</div>
                         </div>
                       </td>
-                      <td className="py-3 px-4">
+                      <td className="py-3 px-6">
                         <div className="font-medium">{assignment.course?.title || 'Unknown'}</div>
                       </td>
-                      <td className="py-3 px-4 text-muted-foreground">
+                      <td className="py-3 px-6 text-muted-foreground">
                         {new Date(assignment.assigned_at).toLocaleDateString()}
                         {assignment.assigned_by_user && (
                           <div className="text-xs">by {assignment.assigned_by_user.full_name}</div>
                         )}
                       </td>
-                      <td className="py-3 px-4">
+                      <td className="py-3 px-6">
                         {assignment.expires_at ? (
-                          <Badge variant={new Date(assignment.expires_at) < new Date() ? 'destructive' : 'secondary'}>
+                          <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                            new Date(assignment.expires_at) < new Date()
+                              ? 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400'
+                              : 'bg-muted text-muted-foreground'
+                          }`}>
                             {new Date(assignment.expires_at).toLocaleDateString()}
-                          </Badge>
+                          </span>
                         ) : (
                           <span className="text-muted-foreground">Never</span>
                         )}
                       </td>
-                      <td className="py-3 px-4 max-w-[200px] truncate text-muted-foreground">
+                      <td className="py-3 px-6 max-w-[200px] truncate text-muted-foreground">
                         {assignment.notes || '-'}
                       </td>
-                      <td className="py-3 px-4 text-right">
+                      <td className="py-3 px-6 text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon">
