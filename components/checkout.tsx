@@ -33,18 +33,18 @@ interface MyanmarPaymentCheckoutProps {
 const PAYMENT_METHODS = [
   {
     id: 'kbz',
-    name: 'KBZ Pay',
+    name: 'KBZPay',
     color: 'from-blue-600 to-blue-800',
     iconBg: 'bg-blue-100 dark:bg-blue-900/40',
     iconColor: 'text-blue-700 dark:text-blue-400',
     accountName: 'Htet Oo Wai Yan',
     phoneNumber: '09443167419',
     logo: '🏦',
-    instruction: 'KBZ Pay app ကိုဖွင့်ပြီး Transfer → Phone Number မှ ငွေလွှဲပေးပါ',
+    instruction: 'KBZPay app ကိုဖွင့်ပြီး Transfer → Phone Number မှ ငွေလွှဲပေးပါ',
   },
   {
     id: 'wave',
-    name: 'Wave Money',
+    name: 'WavePay',
     color: 'from-orange-500 to-red-600',
     iconBg: 'bg-orange-100 dark:bg-orange-900/40',
     iconColor: 'text-orange-700 dark:text-orange-400',
@@ -399,11 +399,10 @@ export function MyanmarPaymentCheckout({
             <button
               key={pm.id}
               onClick={() => setSelectedMethod(pm.id)}
-              className={`relative flex items-center gap-2 rounded-lg border-2 p-3 text-left transition-all ${
-                selectedMethod === pm.id
+              className={`relative flex items-center gap-2 rounded-lg border-2 p-3 text-left transition-all ${selectedMethod === pm.id
                   ? 'border-primary bg-primary/5'
                   : 'border-border hover:border-muted-foreground/40'
-              }`}
+                }`}
             >
               {selectedMethod === pm.id && (
                 <CheckCircle2 className="absolute right-2 top-2 h-3.5 w-3.5 text-primary" />

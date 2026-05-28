@@ -56,10 +56,10 @@ interface PaymentRow {
 
 function parsePaymentMeta(row: PaymentRow) {
   const ref = row.stripe_checkout_session_id || ''
-  const method = ref.startsWith('KBZPAY-') ? 'KBZ Pay'
-    : ref.startsWith('WAVE-') ? 'Wave Money'
-    : ref.startsWith('KBZ-') ? 'KBZ Pay'
-    : 'Other'
+  const method = ref.startsWith('KBZPAY-') ? 'KBZPay'
+    : ref.startsWith('WAVE-') ? 'WavePay'
+      : ref.startsWith('KBZ-') ? 'KBZPay'
+        : 'Other'
   const txnId = ref.replace(/^(KBZPAY-|WAVE-|KBZ-)/, '')
 
   const meta = row.stripe_payment_intent_id || ''
@@ -161,7 +161,7 @@ export default function AdminPaymentsPage() {
           courseId: payment.course_id,
           type: 'paid',
         }),
-      }).catch(() => {})
+      }).catch(() => { })
     }
 
     setProcessing(null)
@@ -229,7 +229,7 @@ export default function AdminPaymentsPage() {
               )}
             </div>
             <h1 className="text-3xl font-bold">Payment Approvals</h1>
-            <p className="mt-1 text-muted-foreground">Verify KBZ Pay & Wave Money transactions.</p>
+            <p className="mt-1 text-muted-foreground">Verify KBZPay & WavePay transactions.</p>
           </div>
           <Button variant="outline" size="sm" onClick={fetchPayments} disabled={loading} className="shrink-0">
             <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
@@ -310,27 +310,25 @@ export default function AdminPaymentsPage() {
             return (
               <Card
                 key={payment.id}
-                className={`overflow-hidden transition-all ${
-                  payment.status === 'pending'
-                    ? 'border-yellow-300 dark:border-yellow-800 shadow-sm'
-                    : ''
-                }`}
+                className={`overflow-hidden transition-all ${payment.status === 'pending'
+                  ? 'border-yellow-300 dark:border-yellow-800 shadow-sm'
+                  : ''
+                  }`}
               >
                 <CardContent className="p-5">
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
                     {/* Left: payment info */}
                     <div className="flex-1 space-y-3">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                          payment.status === 'completed'
-                            ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400'
-                            : payment.status === 'pending'
+                        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${payment.status === 'completed'
+                          ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400'
+                          : payment.status === 'pending'
                             ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400'
                             : 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400'
-                        }`}>
+                          }`}>
                           {payment.status === 'completed' ? '✅ Approved'
-                          : payment.status === 'pending' ? '⏳ Pending'
-                          : '❌ Rejected'}
+                            : payment.status === 'pending' ? '⏳ Pending'
+                              : '❌ Rejected'}
                         </span>
                         <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium">
                           {method}
