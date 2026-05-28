@@ -2,13 +2,13 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { 
-  Target, 
-  Heart, 
-  Lightbulb, 
-  Users, 
-  Globe, 
-  Award, 
+import {
+  Target,
+  Heart,
+  Lightbulb,
+  Users,
+  Globe,
+  Award,
   BookOpen,
   ChevronRight,
   Mail,
@@ -82,7 +82,7 @@ export default async function AboutPage() {
               About <span className="text-primary">Vital Tech LearnHub</span>
             </h1>
             <p className="text-pretty text-lg text-muted-foreground md:text-xl">
-              Empowering learners worldwide with high-quality, accessible education. 
+              Empowering learners worldwide with high-quality, accessible education.
               We believe everyone deserves the opportunity to learn, grow, and succeed.
             </p>
           </div>
@@ -100,9 +100,9 @@ export default async function AboutPage() {
                 </div>
                 <h2 className="mb-4 text-2xl font-bold">Our Mission</h2>
                 <p className="text-muted-foreground leading-relaxed">
-                  To democratize education by providing world-class learning experiences that are 
-                  accessible, engaging, and practical. We strive to bridge the gap between 
-                  traditional education and real-world skills, empowering individuals to achieve 
+                  To democratize education by providing world-class learning experiences that are
+                  accessible, engaging, and practical. We strive to bridge the gap between
+                  traditional education and real-world skills, empowering individuals to achieve
                   their full potential regardless of their background or location.
                 </p>
               </CardContent>
@@ -115,9 +115,9 @@ export default async function AboutPage() {
                 </div>
                 <h2 className="mb-4 text-2xl font-bold">Our Vision</h2>
                 <p className="text-muted-foreground leading-relaxed">
-                  To become the leading platform for transformative learning, where every person 
-                  has the tools and support they need to master new skills, advance their careers, 
-                  and make a positive impact in their communities. We envision a world where 
+                  To become the leading platform for transformative learning, where every person
+                  has the tools and support they need to master new skills, advance their careers,
+                  and make a positive impact in their communities. We envision a world where
                   learning never stops and opportunities are limitless.
                 </p>
               </CardContent>
@@ -227,7 +227,7 @@ export default async function AboutPage() {
                 <Award className="mb-4 h-10 w-10 text-primary" />
                 <h3 className="mb-2 text-xl font-semibold">Industry-Recognized Certificates</h3>
                 <p className="text-muted-foreground">
-                  Earn certificates that are valued by employers and demonstrate your expertise 
+                  Earn certificates that are valued by employers and demonstrate your expertise
                   in your chosen field.
                 </p>
               </CardContent>
@@ -238,7 +238,7 @@ export default async function AboutPage() {
                 <Users className="mb-4 h-10 w-10 text-primary" />
                 <h3 className="mb-2 text-xl font-semibold">Expert Instructors</h3>
                 <p className="text-muted-foreground">
-                  Learn from industry professionals with years of real-world experience and 
+                  Learn from industry professionals with years of real-world experience and
                   passion for teaching.
                 </p>
               </CardContent>
@@ -249,7 +249,7 @@ export default async function AboutPage() {
                 <Lightbulb className="mb-4 h-10 w-10 text-primary" />
                 <h3 className="mb-2 text-xl font-semibold">Practical Learning</h3>
                 <p className="text-muted-foreground">
-                  Our courses focus on hands-on projects and real-world applications, not just 
+                  Our courses focus on hands-on projects and real-world applications, not just
                   theory.
                 </p>
               </CardContent>
@@ -276,7 +276,7 @@ export default async function AboutPage() {
                     <Mail className="h-6 w-6 text-primary" />
                   </div>
                   <h3 className="mb-2 font-semibold">Email</h3>
-                  <p className="text-sm text-muted-foreground">support@vitaltech.com</p>
+                  <p className="text-sm text-muted-foreground">support@vitaltechmyanmar.com</p>
                 </CardContent>
               </Card>
 
@@ -286,7 +286,7 @@ export default async function AboutPage() {
                     <Phone className="h-6 w-6 text-primary" />
                   </div>
                   <h3 className="mb-2 font-semibold">Phone</h3>
-                  <p className="text-sm text-muted-foreground">+95 9 123 456 789</p>
+                  <p className="text-sm text-muted-foreground">+95 9 443 167 419</p>
                 </CardContent>
               </Card>
 
