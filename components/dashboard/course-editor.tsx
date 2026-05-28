@@ -363,7 +363,11 @@ export function CourseEditor({ course, isAdmin = false }: CourseEditorProps) {
             <Play className="h-5 w-5 text-primary" />
             <div>
               <p className="text-sm text-muted-foreground">Duration</p>
-              <p className="text-xl font-bold">{totalDuration}m</p>
+              <p className="text-xl font-bold">
+                {totalDuration >= 60
+                  ? `${(totalDuration / 60).toFixed(1).replace(/\.0$/, '')}h`
+                  : `${totalDuration}m`}
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -518,7 +522,10 @@ export function CourseEditor({ course, isAdmin = false }: CourseEditorProps) {
               <div>
                 <CardTitle>Course Curriculum</CardTitle>
                 <CardDescription>
-                  {lessons.length} lessons &bull; {totalDuration} minutes total
+                  {lessons.length} lessons &bull;{' '}
+                  {totalDuration >= 60
+                    ? `${(totalDuration / 60).toFixed(1).replace(/\.0$/, '')} hours`
+                    : `${totalDuration} minutes`} total
                 </CardDescription>
               </div>
               <Dialog open={isLessonDialogOpen} onOpenChange={setIsLessonDialogOpen}>
@@ -587,7 +594,11 @@ export function CourseEditor({ course, isAdmin = false }: CourseEditorProps) {
                             </span>
                           )}
                           {(lesson.duration_minutes ?? 0) > 0 && (
-                            <span>{lesson.duration_minutes} min</span>
+                            <span>
+                              {lesson.duration_minutes! >= 60
+                                ? `${(lesson.duration_minutes! / 60).toFixed(1).replace(/\.0$/, '')}h`
+                                : `${lesson.duration_minutes}min`}
+                            </span>
                           )}
                         </div>
                       </div>
@@ -912,8 +923,10 @@ function LessonForm({ lesson, onSubmit, onCancel }: LessonFormProps) {
   const [title, setTitle] = useState(lesson?.title || '')
   const [content, setContent] = useState(lesson?.content || '')
   const [videoUrl, setVideoUrl] = useState(lesson?.video_url || '')
-  const [durationMinutes, setDurationMinutes] = useState(
-    lesson?.duration_minutes?.toString() || ''
+  const [durationHours, setDurationHours] = useState(
+    lesson?.duration_minutes
+      ? (lesson.duration_minutes / 60).toFixed(2).replace(/\.?0+$/, '')
+      : ''
   )
   const [isLoading, setIsLoading] = useState(false)
 
@@ -927,7 +940,7 @@ function LessonForm({ lesson, onSubmit, onCancel }: LessonFormProps) {
       title: title.trim(),
       content: content.trim() || null,
       video_url: videoUrl.trim() || null,
-      duration_minutes: parseInt(durationMinutes) || 0,
+      duration_minutes: Math.round((parseFloat(durationHours) || 0) * 60),
     })
     setIsLoading(false)
   }
@@ -986,15 +999,17 @@ function LessonForm({ lesson, onSubmit, onCancel }: LessonFormProps) {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="duration">Duration (minutes)</Label>
+        <Label htmlFor="duration">Duration (hours)</Label>
         <Input
           id="duration"
           type="number"
           min="0"
-          value={durationMinutes}
-          onChange={e => setDurationMinutes(e.target.value)}
-          placeholder="10"
+          step="0.5"
+          value={durationHours}
+          onChange={e => setDurationHours(e.target.value)}
+          placeholder="1.5"
         />
+        <p className="text-xs text-muted-foreground">Enter hours (e.g. 1.5 for 1h 30min)</p>
       </div>
 
       <div className="flex gap-2 pt-2">
