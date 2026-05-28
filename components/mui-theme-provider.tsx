@@ -1,7 +1,6 @@
 'use client'
 
 import { createTheme, ThemeProvider, CssBaseline } from '@mui/material'
-import { useMemo } from 'react'
 
 // Matches the site's existing blue primary palette
 const theme = createTheme({

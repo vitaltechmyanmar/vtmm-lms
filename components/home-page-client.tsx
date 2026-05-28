@@ -1,7 +1,6 @@
 'use client'
 
 import NextLink from 'next/link'
-import Image from 'next/image'
 import {
   AppBar,
   Toolbar,

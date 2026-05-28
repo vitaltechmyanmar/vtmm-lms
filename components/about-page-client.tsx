@@ -12,7 +12,6 @@ import {
   Card,
   CardContent,
   Stack,
-  Paper,
   Chip,
   Divider,
   IconButton,
@@ -30,7 +29,6 @@ import LightbulbIcon from '@mui/icons-material/Lightbulb'
 import PeopleIcon from '@mui/icons-material/People'
 import PublicIcon from '@mui/icons-material/Public'
 import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium'
-import MenuBookIcon from '@mui/icons-material/MenuBook'
 import FavoriteIcon from '@mui/icons-material/Favorite'
 import EmailIcon from '@mui/icons-material/Email'
 import PhoneIcon from '@mui/icons-material/Phone'
