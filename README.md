@@ -1,6 +1,6 @@
 # Vital Tech LearnHub — Learning Management System
 
-A full-featured, production-ready Learning Management System built with **Next.js 16**, **Supabase**, and **Myanmar payment methods (KBZ Pay / Wave Money)**. Designed for Vital Tech Myanmar to deliver online courses to students across Myanmar.
+A full-featured, production-ready Learning Management System built with **Next.js 16**, **Supabase**, and **Myanmar payment methods (KBZPay / WavePay)**. Designed for Vital Tech Myanmar to deliver online courses to students across Myanmar.
 
 ## ✨ Features
 
@@ -8,7 +8,7 @@ A full-featured, production-ready Learning Management System built with **Next.j
 - Browse published courses with category & level filters
 - View public enrollment counts on every course card
 - Enroll in **free courses** instantly
-- Pay for **paid courses** via KBZ Pay or Wave Money
+- Pay for **paid courses** via KBZPay or WavePay
 - Upload payment screenshot and add notes with payment submission
 - Receive **email confirmation** immediately upon enrollment
 - Access course learning interface with video, text content, and resources
@@ -76,7 +76,7 @@ A full-featured, production-ready Learning Management System built with **Next.j
 | Auth | Supabase Auth (email/password, magic links) |
 | Storage | Supabase Storage (payment proofs, course covers, resources) |
 | Email | [Resend](https://resend.com) — enrollment confirmations & admin alerts |
-| Payments | Myanmar manual payments (KBZ Pay, Wave Money) + Stripe (optional) |
+| Payments | Myanmar manual payments (KBZPay, WavePay) + Stripe (optional) |
 | Deployment | Vercel |
 
 ---
@@ -199,7 +199,7 @@ Visit [http://localhost:3000](http://localhost:3000)
 
 ### Paid Course Enrollment
 1. Student clicks **Enroll Now — Pay via KBZ / Wave**
-2. Payment dialog opens: student selects KBZ Pay or Wave Money
+2. Payment dialog opens: student selects KBZPay or WavePay
 3. Student transfers money to displayed account number
 4. Student fills in: Transaction ID, Sender Name, **Payment Screenshot** (required), **Additional Notes** (required)
 5. Payment record created with `pending` status
@@ -251,9 +251,3 @@ Emails are sent via [Resend](https://resend.com):
 5. Deploy — Vercel auto-deploys on every `git push`
 
 > **Tip:** Use `pnpm run build` locally to catch TypeScript/build errors before pushing.
-
----
-
-## 📄 License
-
-MIT License — see LICENSE file for details.

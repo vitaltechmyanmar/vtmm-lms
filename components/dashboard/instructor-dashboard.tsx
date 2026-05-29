@@ -1,8 +1,20 @@
 import { createClient } from '@/lib/supabase/server'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { BookOpen, Users, TrendingUp, Banknote } from 'lucide-react'
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
+import NextLink from 'next/link'
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Grid,
+  Typography,
+  Chip,
+} from '@mui/material'
+import MenuBookIcon from '@mui/icons-material/MenuBook'
+import PeopleIcon from '@mui/icons-material/People'
+import PaymentsOutlinedIcon from '@mui/icons-material/PaymentsOutlined'
+import TrendingUpIcon from '@mui/icons-material/TrendingUp'
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'
+import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import { formatMMK, formatMMKAmount } from '@/lib/format-currency'
 
 interface InstructorDashboardProps {
@@ -12,14 +24,12 @@ interface InstructorDashboardProps {
 export async function InstructorDashboard({ userId }: InstructorDashboardProps) {
   const supabase = await createClient()
 
-  // Get instructor's courses
   const { data: courses } = await supabase
     .from('courses')
     .select('*')
     .eq('instructor_id', userId)
     .order('created_at', { ascending: false })
 
-  // Get total students enrolled in instructor's courses
   const courseIds = courses?.map(c => c.id) || []
   let totalStudents = 0
   let totalRevenue = 0
@@ -32,7 +42,6 @@ export async function InstructorDashboard({ userId }: InstructorDashboardProps) 
 
     totalStudents = studentsCount || 0
 
-    // Get total revenue
     const { data: payments } = await supabase
       .from('payments')
       .select('amount_in_cents')
@@ -45,134 +54,210 @@ export async function InstructorDashboard({ userId }: InstructorDashboardProps) 
   const publishedCourses = courses?.filter(c => c.is_published) || []
   const draftCourses = courses?.filter(c => !c.is_published) || []
 
+  const stats = [
+    {
+      label: 'Total Courses',
+      value: courses?.length || 0,
+      sub: `${publishedCourses.length} published · ${draftCourses.length} drafts`,
+      icon: MenuBookIcon,
+      color: '#2563eb',
+      bg: 'rgba(37,99,235,0.08)',
+    },
+    {
+      label: 'Total Students',
+      value: totalStudents,
+      icon: PeopleIcon,
+      color: '#16a34a',
+      bg: 'rgba(22,163,74,0.08)',
+    },
+    {
+      label: 'Total Revenue',
+      value: formatMMKAmount(totalRevenue),
+      icon: PaymentsOutlinedIcon,
+      color: '#d97706',
+      bg: 'rgba(217,119,6,0.08)',
+    },
+    {
+      label: 'Avg. Rating',
+      value: '4.8',
+      sub: 'Based on reviews',
+      icon: TrendingUpIcon,
+      color: '#7c3aed',
+      bg: 'rgba(124,58,237,0.08)',
+    },
+  ]
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Instructor Dashboard</h1>
-          <p className="text-muted-foreground">
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+      {/* Page header */}
+      <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
+        <Box>
+          <Typography variant="h4" fontWeight={800} gutterBottom>
+            Instructor Dashboard
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
             Manage your courses and track your performance
-          </p>
-        </div>
-        <Link href="/dashboard/courses/new">
-          <Button>Create New Course</Button>
-        </Link>
-      </div>
+          </Typography>
+        </Box>
+        <Button
+          component={NextLink}
+          href="/dashboard/courses/new"
+          variant="contained"
+          startIcon={<AddCircleOutlineIcon />}
+          size="large"
+        >
+          Create New Course
+        </Button>
+      </Box>
 
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Total Courses</CardTitle>
-            <BookOpen className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{courses?.length || 0}</div>
-            <p className="text-xs text-muted-foreground">
-              {publishedCourses.length} published, {draftCourses.length} drafts
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Total Students</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalStudents}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-            <Banknote className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {formatMMKAmount(totalRevenue)}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Avg. Rating</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">4.8</div>
-            <p className="text-xs text-muted-foreground">Based on reviews</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Recent Courses */}
-      <div>
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-xl font-semibold">Your Courses</h2>
-          <Link href="/dashboard/courses">
-            <Button variant="ghost" size="sm">View all</Button>
-          </Link>
-        </div>
-        {courses && courses.length > 0 ? (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {courses.slice(0, 6).map((course) => (
-              <Card key={course.id} className="overflow-hidden">
-                <div className="aspect-video bg-muted">
-                  {course.thumbnail_url ? (
-                    <img
-                      src={course.thumbnail_url}
-                      alt={course.title}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-full items-center justify-center">
-                      <BookOpen className="h-12 w-12 text-muted-foreground" />
-                    </div>
+      {/* Stats */}
+      <Grid container spacing={2.5}>
+        {stats.map(stat => {
+          const Icon = stat.icon
+          return (
+            <Grid item xs={6} md={3} key={stat.label}>
+              <Card sx={{ height: '100%' }}>
+                <CardContent sx={{ p: 3 }}>
+                  <Box
+                    sx={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: 44,
+                      height: 44,
+                      borderRadius: 2,
+                      bgcolor: stat.bg,
+                      mb: 2,
+                    }}
+                  >
+                    <Icon sx={{ fontSize: 22, color: stat.color }} />
+                  </Box>
+                  <Typography variant="h4" fontWeight={800}>
+                    {stat.value}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary" fontWeight={500} display="block">
+                    {stat.label}
+                  </Typography>
+                  {stat.sub && (
+                    <Typography variant="caption" color="text.disabled" display="block" sx={{ mt: 0.25 }}>
+                      {stat.sub}
+                    </Typography>
                   )}
-                </div>
-                <CardContent className="p-4">
-                  <div className="mb-2 flex items-center gap-2">
-                    <span
-                      className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                        course.is_published
-                          ? 'bg-primary/10 text-primary'
-                          : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
-                      }`}
-                    >
-                      {course.is_published ? 'Published' : 'Draft'}
-                    </span>
-                    <span className="text-xs text-muted-foreground capitalize">
-                      {course.level}
-                    </span>
-                  </div>
-                  <h3 className="font-semibold line-clamp-1">{course.title}</h3>
-                  <p className="mb-3 text-sm font-medium text-primary">
-                    {formatMMK(course.price_in_cents)}
-                  </p>
-                  <Link href={`/dashboard/courses/${course.id}`}>
-                    <Button variant="outline" className="w-full" size="sm">
-                      Manage Course
-                    </Button>
-                  </Link>
                 </CardContent>
               </Card>
+            </Grid>
+          )
+        })}
+      </Grid>
+
+      {/* Course list */}
+      <Box>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2.5 }}>
+          <Typography variant="h6" fontWeight={700}>Your Courses</Typography>
+          <Button
+            component={NextLink}
+            href="/dashboard/courses"
+            size="small"
+            endIcon={<ChevronRightIcon />}
+            sx={{ color: 'primary.main', fontWeight: 600 }}
+          >
+            View all
+          </Button>
+        </Box>
+
+        {courses && courses.length > 0 ? (
+          <Grid container spacing={2.5}>
+            {courses.slice(0, 6).map(course => (
+              <Grid item xs={12} sm={6} lg={4} key={course.id}>
+                <Card sx={{ height: '100%', overflow: 'hidden' }}>
+                  <Box sx={{ aspectRatio: '16/9', bgcolor: '#f1f5f9', overflow: 'hidden' }}>
+                    {course.thumbnail_url ? (
+                      <Box
+                        component="img"
+                        src={course.thumbnail_url}
+                        alt={course.title}
+                        sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      />
+                    ) : (
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                        <MenuBookIcon sx={{ fontSize: 48, color: '#cbd5e1' }} />
+                      </Box>
+                    )}
+                  </Box>
+                  <CardContent sx={{ p: 2.5 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+                      <Chip
+                        label={course.is_published ? 'Published' : 'Draft'}
+                        size="small"
+                        sx={{
+                          height: 20,
+                          fontSize: '0.65rem',
+                          fontWeight: 600,
+                          bgcolor: course.is_published ? 'rgba(22,163,74,0.1)' : 'rgba(217,119,6,0.1)',
+                          color: course.is_published ? '#16a34a' : '#d97706',
+                          borderRadius: 1,
+                        }}
+                      />
+                      <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'capitalize' }}>
+                        {course.level}
+                      </Typography>
+                    </Box>
+                    <Typography variant="subtitle2" fontWeight={700} noWrap gutterBottom>
+                      {course.title}
+                    </Typography>
+                    <Typography variant="body2" fontWeight={600} color="primary.main" sx={{ mb: 2 }}>
+                      {formatMMK(course.price_in_cents)}
+                    </Typography>
+                    <Button
+                      component={NextLink}
+                      href={`/dashboard/courses/${course.id}`}
+                      variant="outlined"
+                      size="small"
+                      fullWidth
+                    >
+                      Manage Course
+                    </Button>
+                  </CardContent>
+                </Card>
+              </Grid>
             ))}
-          </div>
+          </Grid>
         ) : (
-          <Card className="py-12 text-center">
-            <CardContent>
-              <BookOpen className="mx-auto h-12 w-12 text-muted-foreground" />
-              <h3 className="mt-4 text-lg font-semibold">No courses yet</h3>
-              <p className="mb-4 text-muted-foreground">
+          <Card>
+            <CardContent sx={{ py: 8, textAlign: 'center' }}>
+              <Box
+                sx={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: 72,
+                  height: 72,
+                  borderRadius: '50%',
+                  bgcolor: 'rgba(37,99,235,0.08)',
+                  mb: 3,
+                }}
+              >
+                <MenuBookIcon sx={{ fontSize: 36, color: 'primary.main' }} />
+              </Box>
+              <Typography variant="h6" fontWeight={700} gutterBottom>
+                No courses yet
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
                 Create your first course and start teaching
-              </p>
-              <Link href="/dashboard/courses/new">
-                <Button>Create Course</Button>
-              </Link>
+              </Typography>
+              <Button
+                component={NextLink}
+                href="/dashboard/courses/new"
+                variant="contained"
+                size="large"
+                startIcon={<AddCircleOutlineIcon />}
+              >
+                Create Course
+              </Button>
             </CardContent>
           </Card>
         )}
-      </div>
-    </div>
+      </Box>
+    </Box>
   )
 }

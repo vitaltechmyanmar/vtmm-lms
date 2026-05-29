@@ -1,12 +1,36 @@
 import { createClient } from '@/lib/supabase/server'
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { BookOpen, Users, ChevronRight } from 'lucide-react'
-import { MobileNav } from '@/components/mobile-nav'
+import NextLink from 'next/link'
+import {
+  Box,
+  Container,
+  AppBar,
+  Toolbar,
+  Typography,
+  Button,
+  Chip,
+  Grid,
+  Card,
+  CardContent,
+  Stack,
+  Divider,
+  IconButton,
+  Drawer,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemText,
+} from '@mui/material'
+import MenuBookOutlinedIcon from '@mui/icons-material/MenuBookOutlined'
+import PeopleOutlinedIcon from '@mui/icons-material/PeopleOutlined'
+import ChevronRightIcon from '@mui/icons-material/ChevronRight'
+import MenuIcon from '@mui/icons-material/Menu'
+import FilterListIcon from '@mui/icons-material/FilterList'
+import ClearIcon from '@mui/icons-material/Clear'
+import { MuiThemeProvider } from '@/components/mui-theme-provider'
 import { getPublishedCoursesWithCounts } from '@/app/actions/db'
 import { formatMMK } from '@/lib/format-currency'
+
+// ── Server component: no 'use client' needed ──────────────────────────────────
 
 export default async function CoursesPage({
   searchParams,
@@ -17,243 +41,380 @@ export default async function CoursesPage({
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Fetch categories
   const { data: categories } = await supabase
     .from('categories')
     .select('*')
     .eq('is_active', true)
     .order('order_index', { ascending: true })
 
-  // Fetch courses with accurate enrollment counts (bypasses RLS via DB function)
   const { data: courses } = await getPublishedCoursesWithCounts({
     category: params.category,
     level: params.level,
     q: params.q,
   })
 
+  const navLinks = [
+    { href: '/courses', label: 'Browse Courses' },
+    { href: '/about', label: 'About' },
+  ]
+
+  const levels = ['beginner', 'intermediate', 'advanced']
+
   return (
-    <div className="min-h-screen bg-background">
-      {/* Navigation */}
-      <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto flex h-16 items-center justify-between px-4">
-          <Link href="/" className="flex items-center gap-2 min-w-0">
-            <img src="/vitaltech_logo.png" alt="Vital Tech LearnHub" className="h-9 w-9 flex-shrink-0" />
-            <span className="text-lg font-bold hidden sm:block">Vital Tech LearnHub</span>
-            <span className="text-lg font-bold sm:hidden">VT LearnHub</span>
-          </Link>
-          <nav className="hidden items-center gap-6 md:flex">
-            <Link href="/courses" className="text-sm font-medium text-foreground">
-              Browse Courses
-            </Link>
-            <Link href="/about" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
-              About
-            </Link>
-          </nav>
-          <div className="flex items-center gap-3">
-            {user ? (
-              <Link href="/dashboard" className="hidden md:inline-flex">
-                <Button>Dashboard</Button>
-              </Link>
-            ) : (
-              <div className="hidden items-center gap-3 md:flex">
-                <Link href="/auth/login">
-                  <Button variant="ghost">Sign in</Button>
-                </Link>
-                <Link href="/auth/sign-up">
-                  <Button>Get Started</Button>
-                </Link>
-              </div>
-            )}
-            <MobileNav
-              isLoggedIn={!!user}
-              links={[
-                { href: '/courses', label: 'Browse Courses' },
-                { href: '/about', label: 'About' },
-              ]}
-            />
-          </div>
-        </div>
-      </header>
+    <MuiThemeProvider>
+      <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', bgcolor: 'background.default' }}>
 
-      <main className="container mx-auto px-4 py-12">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="mb-2 text-3xl font-bold">Explore Courses</h1>
-          <p className="text-muted-foreground">
-            Discover courses taught by expert instructors
-          </p>
-        </div>
+        {/* ── AppBar / Nav ── */}
+        <AppBar position="sticky" elevation={0}>
+          <Toolbar sx={{ maxWidth: 'lg', mx: 'auto', width: '100%', px: { xs: 2, md: 3 } }}>
+            {/* Logo */}
+            <Box
+              component={NextLink}
+              href="/"
+              sx={{ display: 'flex', alignItems: 'center', gap: 1, textDecoration: 'none', color: 'inherit', flexGrow: { xs: 1, md: 0 } }}
+            >
+              <Box component="img" src="/vitaltech_logo.png" alt="Vital Tech LearnHub" sx={{ height: 36, width: 36 }} />
+              <Typography variant="h6" fontWeight={700} sx={{ display: { xs: 'none', sm: 'block' } }}>
+                Vital Tech LearnHub
+              </Typography>
+              <Typography variant="h6" fontWeight={700} sx={{ display: { xs: 'block', sm: 'none' } }}>
+                VT LearnHub
+              </Typography>
+            </Box>
 
-        {/* Categories */}
-        {categories && categories.length > 0 && (
-          <div className="mb-8">
-            <h2 className="mb-4 text-lg font-semibold">Browse by Category</h2>
-            <div className="flex flex-wrap gap-2">
-              <Link href="/courses">
-                <Badge 
-                  variant={!params.category ? "default" : "outline"} 
-                  className="cursor-pointer px-4 py-2 text-sm"
+            {/* Desktop nav */}
+            <Stack direction="row" spacing={3} sx={{ flexGrow: 1, ml: 4, display: { xs: 'none', md: 'flex' } }}>
+              {navLinks.map(link => (
+                <Typography
+                  key={link.href}
+                  component={NextLink}
+                  href={link.href}
+                  variant="body2"
+                  fontWeight={link.href === '/courses' ? 700 : 500}
+                  sx={{
+                    textDecoration: 'none',
+                    color: link.href === '/courses' ? 'primary.main' : 'text.secondary',
+                    '&:hover': { color: 'primary.main' },
+                  }}
                 >
-                  All
-                </Badge>
-              </Link>
-              {categories.map((cat) => (
-                <Link key={cat.id} href={`/courses?category=${cat.name}`}>
-                  <Badge
-                    variant={params.category === cat.name ? "default" : "outline"}
-                    className="cursor-pointer px-4 py-2 text-sm"
-                    style={params.category === cat.name ? { backgroundColor: cat.color } : {}}
-                  >
-                    {cat.name}
-                  </Badge>
-                </Link>
+                  {link.label}
+                </Typography>
               ))}
-            </div>
-          </div>
-        )}
+            </Stack>
 
-        {/* Level Filter */}
-        <div className="mb-8">
-          <h2 className="mb-4 text-lg font-semibold">Filter by Level</h2>
-          <div className="flex flex-wrap gap-2">
-            <Link href={params.category ? `/courses?category=${params.category}` : '/courses'}>
-              <Badge 
-                variant={!params.level ? "default" : "outline"} 
-                className="cursor-pointer px-4 py-2 text-sm"
-              >
-                All Levels
-              </Badge>
-            </Link>
-            {['beginner', 'intermediate', 'advanced'].map((level) => (
-              <Link 
-                key={level} 
-                href={params.category ? `/courses?category=${params.category}&level=${level}` : `/courses?level=${level}`}
-              >
-                <Badge
-                  variant={params.level === level ? "default" : "outline"}
-                  className="cursor-pointer px-4 py-2 text-sm capitalize"
-                >
-                  {level}
-                </Badge>
-              </Link>
-            ))}
-          </div>
-        </div>
-
-        {/* Active Filters */}
-        {(params.category || params.level) && (
-          <div className="mb-6 flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Active filters:</span>
-            {params.category && (
-              <Badge variant="secondary">{params.category}</Badge>
-            )}
-            {params.level && (
-              <Badge variant="secondary" className="capitalize">{params.level}</Badge>
-            )}
-            <Link href="/courses" className="text-sm text-primary hover:underline">
-              Clear all
-            </Link>
-          </div>
-        )}
-
-        {/* Course Grid */}
-        {courses && courses.length > 0 ? (
-          <>
-            <p className="mb-4 text-sm text-muted-foreground">
-              {courses.length} course{courses.length !== 1 ? 's' : ''} found
-            </p>
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {courses.map((course) => (
-                <Link key={course.id} href={`/courses/${course.id}`}>
-                  <Card className="overflow-hidden transition-all hover:shadow-lg hover:-translate-y-1">
-                    <div className="aspect-video bg-muted">
-                      {course.thumbnail_url ? (
-                        <img
-                          src={course.thumbnail_url}
-                          alt={course.title}
-                          className="h-full w-full object-cover"
-                        />
-                      ) : (
-                        <div className="flex h-full items-center justify-center">
-                          <BookOpen className="h-12 w-12 text-muted-foreground" />
-                        </div>
-                      )}
-                    </div>
-                    <CardContent className="p-4">
-                      <div className="mb-2 flex items-center gap-2">
-                        <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary capitalize">
-                          {course.level}
-                        </span>
-                        {course.category && (
-                          <span className="text-xs text-muted-foreground">
-                            {course.category}
-                          </span>
-                        )}
-                      </div>
-                      <h3 className="mb-1 font-semibold line-clamp-2">{course.title}</h3>
-                      <p className="mb-3 text-sm text-muted-foreground">
-                        by {course.instructor?.full_name || 'Instructor'}
-                      </p>
-                      <div className="mb-3 flex items-center gap-4 text-sm text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <BookOpen className="h-4 w-4" />
-                          {course.lessons?.[0]?.count || 0} lessons
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Users className="h-4 w-4" />
-                          {course.enrollment_count} students
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-lg font-bold text-primary">
-                          {formatMMK(course.price_in_cents)}
-                        </span>
-                        <Button size="sm">
-                          View Course
-                          <ChevronRight className="ml-1 h-4 w-4" />
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              ))}
-            </div>
-          </>
-        ) : (
-          <Card className="py-16 text-center">
-            <CardContent>
-              <BookOpen className="mx-auto h-12 w-12 text-muted-foreground" />
-              <h3 className="mt-4 text-lg font-semibold">No courses found</h3>
-              <p className="text-muted-foreground">
-                {params.category || params.level 
-                  ? 'Try adjusting your filters or browse all courses'
-                  : 'Check back later for new courses'
-                }
-              </p>
-              {(params.category || params.level) && (
-                <Link href="/courses" className="mt-4 inline-block">
-                  <Button variant="outline">View All Courses</Button>
-                </Link>
+            {/* Auth actions */}
+            <Stack direction="row" spacing={1} sx={{ display: { xs: 'none', md: 'flex' } }}>
+              {user ? (
+                <Button variant="contained" component={NextLink} href="/dashboard" size="small">
+                  Dashboard
+                </Button>
+              ) : (
+                <>
+                  <Button component={NextLink} href="/auth/login" color="inherit" size="small">
+                    Sign in
+                  </Button>
+                  <Button variant="contained" component={NextLink} href="/auth/sign-up" size="small">
+                    Get Started
+                  </Button>
+                </>
               )}
-            </CardContent>
-          </Card>
-        )}
-      </main>
+            </Stack>
+          </Toolbar>
+        </AppBar>
 
-      {/* Footer */}
-      <footer className="border-t py-8">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
-            <div className="flex items-center gap-2">
-              <img src="/vitaltech_logo.png" alt="Vital Tech LearnHub" className="h-8 w-8" />
-              <span className="font-semibold">Vital Tech LearnHub</span>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              &copy; {new Date().getFullYear()} Vital Tech LearnHub. All rights reserved.
-            </p>
-          </div>
-        </div>
-      </footer>
-    </div>
+        {/* ── Main Content ── */}
+        <Box component="main" sx={{ flex: 1, py: { xs: 6, md: 8 } }}>
+          <Container maxWidth="lg">
+
+            {/* Page header */}
+            <Box sx={{ mb: 6 }}>
+              <Typography variant="h3" fontWeight={800} gutterBottom>
+                Explore Courses
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                Discover DevOps & Cloud courses taught by a working engineer
+              </Typography>
+            </Box>
+
+            {/* Filters */}
+            <Box sx={{ mb: 5, display: 'flex', flexDirection: 'column', gap: 3 }}>
+              {/* Categories */}
+              {categories && categories.length > 0 && (
+                <Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+                    <FilterListIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                    <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                      Category
+                    </Typography>
+                  </Box>
+                  <Stack direction="row" flexWrap="wrap" gap={1} useFlexGap>
+                    <Chip
+                      component={NextLink}
+                      href="/courses"
+                      label="All"
+                      clickable
+                      variant={!params.category ? 'filled' : 'outlined'}
+                      color={!params.category ? 'primary' : 'default'}
+                      size="small"
+                    />
+                    {categories.map(cat => (
+                      <Chip
+                        key={cat.id}
+                        component={NextLink}
+                        href={`/courses?category=${cat.name}`}
+                        label={cat.name}
+                        clickable
+                        variant={params.category === cat.name ? 'filled' : 'outlined'}
+                        size="small"
+                        sx={params.category === cat.name ? { bgcolor: cat.color, color: 'white', borderColor: cat.color } : {}}
+                      />
+                    ))}
+                  </Stack>
+                </Box>
+              )}
+
+              {/* Level filter */}
+              <Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+                  <FilterListIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                  <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                    Level
+                  </Typography>
+                </Box>
+                <Stack direction="row" flexWrap="wrap" gap={1} useFlexGap>
+                  <Chip
+                    component={NextLink}
+                    href={params.category ? `/courses?category=${params.category}` : '/courses'}
+                    label="All Levels"
+                    clickable
+                    variant={!params.level ? 'filled' : 'outlined'}
+                    color={!params.level ? 'primary' : 'default'}
+                    size="small"
+                  />
+                  {levels.map(level => (
+                    <Chip
+                      key={level}
+                      component={NextLink}
+                      href={params.category ? `/courses?category=${params.category}&level=${level}` : `/courses?level=${level}`}
+                      label={level.charAt(0).toUpperCase() + level.slice(1)}
+                      clickable
+                      variant={params.level === level ? 'filled' : 'outlined'}
+                      color={params.level === level ? 'primary' : 'default'}
+                      size="small"
+                    />
+                  ))}
+                </Stack>
+              </Box>
+
+              {/* Active filter summary */}
+              {(params.category || params.level) && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <Typography variant="caption" color="text.secondary">Active filters:</Typography>
+                  {params.category && (
+                    <Chip label={params.category} size="small" variant="outlined" color="primary" />
+                  )}
+                  {params.level && (
+                    <Chip label={params.level} size="small" variant="outlined" color="primary" sx={{ textTransform: 'capitalize' }} />
+                  )}
+                  <Button
+                    component={NextLink}
+                    href="/courses"
+                    size="small"
+                    startIcon={<ClearIcon sx={{ fontSize: '14px !important' }} />}
+                    sx={{ fontSize: '0.75rem', color: 'text.secondary' }}
+                  >
+                    Clear all
+                  </Button>
+                </Box>
+              )}
+            </Box>
+
+            {/* Course Grid */}
+            {courses && courses.length > 0 ? (
+              <>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                  {courses.length} course{courses.length !== 1 ? 's' : ''} found
+                </Typography>
+                <Grid container spacing={3}>
+                  {courses.map(course => (
+                    <Grid item xs={12} sm={6} lg={4} key={course.id}>
+                      <Card
+                        component={NextLink}
+                        href={`/courses/${course.id}`}
+                        sx={{
+                          height: '100%',
+                          textDecoration: 'none',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          transition: 'all 0.2s ease',
+                          overflow: 'hidden',
+                          '&:hover': {
+                            transform: 'translateY(-4px)',
+                            boxShadow: '0 12px 32px rgba(0,0,0,0.12)',
+                          },
+                        }}
+                      >
+                        {/* Thumbnail */}
+                        <Box sx={{ aspectRatio: '16/9', bgcolor: '#f1f5f9', overflow: 'hidden' }}>
+                          {course.thumbnail_url ? (
+                            <Box
+                              component="img"
+                              src={course.thumbnail_url}
+                              alt={course.title}
+                              sx={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.3s ease', '.MuiCard-root:hover &': { transform: 'scale(1.04)' } }}
+                            />
+                          ) : (
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                              <MenuBookOutlinedIcon sx={{ fontSize: 48, color: '#cbd5e1' }} />
+                            </Box>
+                          )}
+                        </Box>
+
+                        <CardContent sx={{ p: 3, flex: 1, display: 'flex', flexDirection: 'column' }}>
+                          {/* Badges */}
+                          <Stack direction="row" spacing={1} sx={{ mb: 2 }} flexWrap="wrap" useFlexGap>
+                            <Chip
+                              label={course.level}
+                              size="small"
+                              sx={{
+                                height: 20,
+                                fontSize: '0.65rem',
+                                fontWeight: 600,
+                                bgcolor: 'rgba(37,99,235,0.1)',
+                                color: 'primary.main',
+                                borderRadius: 1,
+                                textTransform: 'capitalize',
+                              }}
+                            />
+                            {course.category && (
+                              <Typography variant="caption" color="text.secondary" sx={{ alignSelf: 'center' }}>
+                                {course.category}
+                              </Typography>
+                            )}
+                          </Stack>
+
+                          {/* Title */}
+                          <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 0.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                            {course.title}
+                          </Typography>
+
+                          {/* Instructor */}
+                          <Typography variant="caption" color="text.secondary" sx={{ mb: 2 }}>
+                            by {course.instructor?.full_name || 'Instructor'}
+                          </Typography>
+
+                          {/* Meta info */}
+                          <Stack direction="row" spacing={2.5} sx={{ mb: 3, mt: 'auto' }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                              <MenuBookOutlinedIcon sx={{ fontSize: 14, color: 'text.secondary' }} />
+                              <Typography variant="caption" color="text.secondary">
+                                {course.lessons?.[0]?.count || 0} lessons
+                              </Typography>
+                            </Box>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                              <PeopleOutlinedIcon sx={{ fontSize: 14, color: 'text.secondary' }} />
+                              <Typography variant="caption" color="text.secondary">
+                                {course.enrollment_count} students
+                              </Typography>
+                            </Box>
+                          </Stack>
+
+                          {/* Price + CTA */}
+                          <Divider sx={{ mb: 2 }} />
+                          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <Typography variant="h6" fontWeight={800} color="primary.main">
+                              {formatMMK(course.price_in_cents)}
+                            </Typography>
+                            <Button
+                              variant="contained"
+                              size="small"
+                              endIcon={<ChevronRightIcon />}
+                              sx={{ pointerEvents: 'none' }}
+                            >
+                              View Course
+                            </Button>
+                          </Box>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                  ))}
+                </Grid>
+              </>
+            ) : (
+              <Card>
+                <CardContent sx={{ py: 10, textAlign: 'center' }}>
+                  <Box
+                    sx={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: 80,
+                      height: 80,
+                      borderRadius: '50%',
+                      bgcolor: 'rgba(37,99,235,0.08)',
+                      mb: 3,
+                    }}
+                  >
+                    <MenuBookOutlinedIcon sx={{ fontSize: 40, color: 'primary.main' }} />
+                  </Box>
+                  <Typography variant="h6" fontWeight={700} gutterBottom>
+                    No courses found
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                    {params.category || params.level
+                      ? 'Try adjusting your filters or browse all courses'
+                      : 'Check back later for new courses'}
+                  </Typography>
+                  {(params.category || params.level) && (
+                    <Button component={NextLink} href="/courses" variant="outlined" size="large">
+                      View All Courses
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+          </Container>
+        </Box>
+
+        {/* ── Footer ── */}
+        <Box component="footer" sx={{ borderTop: '1px solid', borderColor: 'divider', py: 5 }}>
+          <Container maxWidth="lg">
+            <Stack
+              direction={{ xs: 'column', md: 'row' }}
+              alignItems="center"
+              justifyContent="space-between"
+              spacing={2}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box component="img" src="/vitaltech_logo.png" alt="logo" sx={{ width: 32, height: 32 }} />
+                <Typography fontWeight={600}>Vital Tech LearnHub</Typography>
+              </Box>
+              <Stack direction="row" spacing={3}>
+                {[
+                  { href: '/courses', label: 'Courses' },
+                  { href: '/about', label: 'About' },
+                  { href: '/auth/login', label: 'Sign In' },
+                ].map(link => (
+                  <Typography
+                    key={link.href}
+                    component={NextLink}
+                    href={link.href}
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ textDecoration: 'none', '&:hover': { color: 'primary.main' } }}
+                  >
+                    {link.label}
+                  </Typography>
+                ))}
+              </Stack>
+              <Typography variant="body2" color="text.secondary">
+                © {new Date().getFullYear()} Vital Tech Myanmar
+              </Typography>
+            </Stack>
+          </Container>
+        </Box>
+
+      </Box>
+    </MuiThemeProvider>
   )
 }

@@ -1,9 +1,22 @@
 import { createClient } from '@/lib/supabase/server'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Users, BookOpen, TrendingUp, Banknote, ChevronRight, BarChart3 } from 'lucide-react'
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
+import NextLink from 'next/link'
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Grid,
+  Typography,
+  Chip,
+  Avatar,
+  Divider,
+} from '@mui/material'
+import PeopleIcon from '@mui/icons-material/People'
+import MenuBookIcon from '@mui/icons-material/MenuBook'
+import PaymentsOutlinedIcon from '@mui/icons-material/PaymentsOutlined'
+import PendingActionsIcon from '@mui/icons-material/PendingActions'
+import ChevronRightIcon from '@mui/icons-material/ChevronRight'
+import BarChartIcon from '@mui/icons-material/BarChart'
 import { formatMMKAmount } from '@/lib/format-currency'
 
 interface AdminDashboardProps {
@@ -48,143 +61,238 @@ export async function AdminDashboard({ userId }: AdminDashboardProps) {
     {
       label: 'Total Users',
       value: totalUsers || 0,
-      icon: Users,
-      iconBg: 'bg-blue-100 dark:bg-blue-900/40',
-      iconColor: 'text-blue-600 dark:text-blue-400',
-      gradFrom: '#3b82f611',
-      border: 'border-blue-200 dark:border-blue-900',
+      icon: PeopleIcon,
+      color: '#2563eb',
+      bg: 'rgba(37,99,235,0.08)',
       href: '/dashboard/admin/users',
     },
     {
       label: 'Total Courses',
       value: totalCourses || 0,
       sub: `${publishedCourses || 0} published`,
-      icon: BookOpen,
-      iconBg: 'bg-green-100 dark:bg-green-900/40',
-      iconColor: 'text-green-600 dark:text-green-400',
-      gradFrom: '#22c55e11',
-      border: 'border-green-200 dark:border-green-900',
+      icon: MenuBookIcon,
+      color: '#16a34a',
+      bg: 'rgba(22,163,74,0.08)',
       href: '/dashboard/admin/courses',
     },
     {
       label: 'Total Revenue',
       value: formatMMKAmount(totalRevenue),
-      icon: Banknote,
-      iconBg: 'bg-yellow-100 dark:bg-yellow-900/40',
-      iconColor: 'text-yellow-600 dark:text-yellow-500',
-      gradFrom: '#f59e0b11',
-      border: 'border-yellow-200 dark:border-yellow-900',
+      icon: PaymentsOutlinedIcon,
+      color: '#d97706',
+      bg: 'rgba(217,119,6,0.08)',
       href: '/dashboard/admin/payments',
     },
     {
       label: 'Pending Payments',
       value: pendingPayments || 0,
-      icon: TrendingUp,
-      iconBg: 'bg-orange-100 dark:bg-orange-900/40',
-      iconColor: 'text-orange-600 dark:text-orange-400',
-      gradFrom: '#f9731611',
-      border: 'border-orange-200 dark:border-orange-900',
+      icon: PendingActionsIcon,
+      color: '#dc2626',
+      bg: 'rgba(220,38,38,0.08)',
       href: '/dashboard/admin/payments',
       highlight: (pendingPayments || 0) > 0,
     },
   ]
 
-  const roleColors: Record<string, string> = {
-    admin: 'bg-red-500',
-    instructor: 'bg-blue-500',
-    student: 'bg-green-500',
-  }
-  const roleBadge: Record<string, string> = {
-    admin: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400',
-    instructor: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400',
-    student: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400',
+  const roleConfig: Record<string, { label: string; color: string; bg: string; avatarBg: string }> = {
+    admin: { label: 'Admin', color: '#dc2626', bg: 'rgba(220,38,38,0.1)', avatarBg: '#dc2626' },
+    instructor: { label: 'Instructor', color: '#2563eb', bg: 'rgba(37,99,235,0.1)', avatarBg: '#2563eb' },
+    student: { label: 'Student', color: '#16a34a', bg: 'rgba(22,163,74,0.1)', avatarBg: '#16a34a' },
   }
 
   return (
-    <div className="space-y-8">
-      {/* Page Header */}
-      <div className="relative overflow-hidden rounded-2xl border bg-gradient-to-br from-primary/10 via-background to-blue-500/5 p-6 shadow-sm">
-        <div
-          className="pointer-events-none absolute inset-0 opacity-30"
-          style={{
-            backgroundImage: 'linear-gradient(to right,#8882 1px,transparent 1px),linear-gradient(to bottom,#8882 1px,transparent 1px)',
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+      {/* Page banner */}
+      <Box
+        sx={{
+          position: 'relative',
+          overflow: 'hidden',
+          borderRadius: 3,
+          border: '1px solid #e2e8f0',
+          background: 'linear-gradient(135deg, rgba(37,99,235,0.08) 0%, #ffffff 60%, rgba(124,58,237,0.06) 100%)',
+          p: { xs: 3, md: 4 },
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            inset: 0,
+            backgroundImage:
+              'linear-gradient(to right,rgba(100,116,139,.06) 1px,transparent 1px),linear-gradient(to bottom,rgba(100,116,139,.06) 1px,transparent 1px)',
             backgroundSize: '32px 32px',
-          }}
-        />
-        <div className="relative">
-          <div className="mb-2 inline-flex items-center gap-2 rounded-full border bg-background/80 px-3 py-1 text-xs font-medium shadow-sm">
-            <BarChart3 className="h-3 w-3 text-primary" />
-            Admin Portal
-          </div>
-          <h1 className="text-3xl font-bold">Platform Overview</h1>
-          <p className="mt-1 text-muted-foreground">Manage users, courses, and payments from one place.</p>
-        </div>
-      </div>
+            pointerEvents: 'none',
+          },
+        }}
+      >
+        <Box sx={{ position: 'relative' }}>
+          <Box
+            sx={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 1,
+              px: 1.5,
+              py: 0.5,
+              borderRadius: 99,
+              bgcolor: 'white',
+              border: '1px solid #e2e8f0',
+              mb: 2,
+            }}
+          >
+            <BarChartIcon sx={{ fontSize: 14, color: 'primary.main' }} />
+            <Typography variant="caption" fontWeight={600} color="primary.main">Admin Portal</Typography>
+          </Box>
+          <Typography variant="h4" fontWeight={800} gutterBottom>
+            Platform Overview
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Manage users, courses, and payments from one place.
+          </Typography>
+        </Box>
+      </Box>
 
       {/* Stats Grid */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <Grid container spacing={2.5}>
         {stats.map(stat => {
           const Icon = stat.icon
           return (
-            <Link key={stat.label} href={stat.href}>
-              <div
-                className={`group relative overflow-hidden rounded-xl border p-5 transition-all hover:shadow-md hover:-translate-y-0.5 ${stat.border} ${stat.highlight ? 'ring-2 ring-orange-400/40' : ''}`}
-                style={{ background: `linear-gradient(135deg,${stat.gradFrom},transparent)` }}
+            <Grid item xs={6} md={3} key={stat.label}>
+              <Card
+                component={NextLink}
+                href={stat.href}
+                sx={{
+                  height: '100%',
+                  textDecoration: 'none',
+                  display: 'block',
+                  transition: 'all 0.2s',
+                  outline: stat.highlight ? `2px solid rgba(220,38,38,0.35)` : 'none',
+                  '&:hover': {
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
+                  },
+                }}
               >
-                <div className="flex items-start justify-between mb-3">
-                  <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${stat.iconBg}`}>
-                    <Icon className={`h-5 w-5 ${stat.iconColor}`} />
-                  </div>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                </div>
-                <div className="text-2xl font-bold">{stat.value}</div>
-                <div className="mt-1 text-xs text-muted-foreground font-medium">{stat.label}</div>
-                {stat.sub && <div className="text-xs text-muted-foreground mt-0.5">{stat.sub}</div>}
-              </div>
-            </Link>
+                <CardContent sx={{ p: 3 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                    <Box
+                      sx={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: 44,
+                        height: 44,
+                        borderRadius: 2,
+                        bgcolor: stat.bg,
+                      }}
+                    >
+                      <Icon sx={{ fontSize: 22, color: stat.color }} />
+                    </Box>
+                    <ChevronRightIcon sx={{ fontSize: 16, color: 'text.disabled', opacity: 0, '.MuiCard-root:hover &': { opacity: 1 }, transition: 'opacity 0.2s' }} />
+                  </Box>
+                  <Typography variant="h4" fontWeight={800} color="text.primary">
+                    {stat.value}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary" fontWeight={500} display="block">
+                    {stat.label}
+                  </Typography>
+                  {stat.sub && (
+                    <Typography variant="caption" color="text.disabled" display="block" sx={{ mt: 0.25 }}>
+                      {stat.sub}
+                    </Typography>
+                  )}
+                </CardContent>
+              </Card>
+            </Grid>
           )
         })}
-      </div>
+      </Grid>
 
       {/* Recent Users */}
-      <Card className="overflow-hidden">
-        <CardHeader className="flex flex-row items-center justify-between border-b bg-muted/30 px-6 py-4">
-          <div>
-            <CardTitle className="text-base">Recent Users</CardTitle>
-            <p className="text-xs text-muted-foreground mt-0.5">Latest platform registrations</p>
-          </div>
-          <Link href="/dashboard/admin/users">
-            <Button variant="ghost" size="sm" className="gap-1.5">
-              View all <ChevronRight className="h-3.5 w-3.5" />
-            </Button>
-          </Link>
-        </CardHeader>
-        <CardContent className="p-0">
-          <div className="divide-y">
-            {recentUsers?.map((user) => (
-              <div key={user.id} className="flex items-center gap-4 px-6 py-3.5 hover:bg-muted/30 transition-colors">
-                <div
-                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold text-white ${roleColors[user.role] || 'bg-muted-foreground'}`}
+      <Card>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            px: 3,
+            py: 2,
+            borderBottom: '1px solid #e2e8f0',
+            bgcolor: '#f8fafc',
+          }}
+        >
+          <Box>
+            <Typography variant="subtitle1" fontWeight={700}>Recent Users</Typography>
+            <Typography variant="caption" color="text.secondary">Latest platform registrations</Typography>
+          </Box>
+          <Button
+            component={NextLink}
+            href="/dashboard/admin/users"
+            size="small"
+            endIcon={<ChevronRightIcon />}
+            sx={{ fontWeight: 600 }}
+          >
+            View all
+          </Button>
+        </Box>
+
+        <Box>
+          {recentUsers?.map((user, idx) => {
+            const role = roleConfig[user.role] ?? roleConfig.student
+            const initial = (user.full_name?.charAt(0) || user.email.charAt(0)).toUpperCase()
+            return (
+              <Box key={user.id}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 2,
+                    px: 3,
+                    py: 2,
+                    transition: 'background-color 0.15s',
+                    '&:hover': { bgcolor: '#f8fafc' },
+                  }}
                 >
-                  {(user.full_name?.charAt(0) || user.email.charAt(0)).toUpperCase()}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{user.full_name || 'User'}</p>
-                  <p className="text-xs text-muted-foreground truncate">{user.email}</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${roleBadge[user.role] || 'bg-muted'}`}>
-                    {user.role}
-                  </span>
-                  <span className="text-xs text-muted-foreground hidden sm:block">
-                    {new Date(user.created_at).toLocaleDateString()}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
+                  <Avatar
+                    sx={{
+                      width: 36,
+                      height: 36,
+                      bgcolor: role.avatarBg,
+                      fontSize: '0.875rem',
+                      fontWeight: 700,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {initial}
+                  </Avatar>
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Typography variant="body2" fontWeight={600} noWrap>
+                      {user.full_name || 'User'}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary" noWrap display="block">
+                      {user.email}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexShrink: 0 }}>
+                    <Chip
+                      label={role.label}
+                      size="small"
+                      sx={{
+                        height: 20,
+                        fontSize: '0.65rem',
+                        fontWeight: 600,
+                        bgcolor: role.bg,
+                        color: role.color,
+                        borderRadius: 1,
+                      }}
+                    />
+                    <Typography variant="caption" color="text.secondary" sx={{ display: { xs: 'none', sm: 'block' } }}>
+                      {new Date(user.created_at).toLocaleDateString()}
+                    </Typography>
+                  </Box>
+                </Box>
+                {idx < (recentUsers.length - 1) && <Divider sx={{ mx: 3 }} />}
+              </Box>
+            )
+          })}
+        </Box>
       </Card>
-    </div>
+    </Box>
   )
 }

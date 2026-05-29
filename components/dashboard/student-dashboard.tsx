@@ -1,9 +1,21 @@
 import { createClient } from '@/lib/supabase/server'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Progress } from '@/components/ui/progress'
-import { BookOpen, Clock, Award, TrendingUp } from 'lucide-react'
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
+import NextLink from 'next/link'
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Grid,
+  LinearProgress,
+  Typography,
+  Avatar,
+  Chip,
+} from '@mui/material'
+import MenuBookIcon from '@mui/icons-material/MenuBook'
+import AccessTimeIcon from '@mui/icons-material/AccessTime'
+import TrendingUpIcon from '@mui/icons-material/TrendingUp'
+import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium'
+import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 
 interface StudentDashboardProps {
   userId: string
@@ -12,7 +24,6 @@ interface StudentDashboardProps {
 export async function StudentDashboard({ userId }: StudentDashboardProps) {
   const supabase = await createClient()
 
-  // Get enrollments with course details
   const { data: enrollments } = await supabase
     .from('enrollments')
     .select(`
@@ -27,7 +38,6 @@ export async function StudentDashboard({ userId }: StudentDashboardProps) {
     .eq('user_id', userId)
     .order('enrolled_at', { ascending: false })
 
-  // Get certificates count
   const { count: certificatesCount } = await supabase
     .from('certificates')
     .select('*', { count: 'exact', head: true })
@@ -36,116 +46,165 @@ export async function StudentDashboard({ userId }: StudentDashboardProps) {
   const inProgressCourses = enrollments?.filter(e => !e.completed_at) || []
   const completedCourses = enrollments?.filter(e => e.completed_at) || []
 
+  const stats = [
+    { label: 'Enrolled Courses', value: enrollments?.length || 0, icon: MenuBookIcon, color: '#2563eb', bg: 'rgba(37,99,235,0.08)' },
+    { label: 'In Progress', value: inProgressCourses.length, icon: AccessTimeIcon, color: '#d97706', bg: 'rgba(217,119,6,0.08)' },
+    { label: 'Completed', value: completedCourses.length, icon: TrendingUpIcon, color: '#16a34a', bg: 'rgba(22,163,74,0.08)' },
+    { label: 'Certificates', value: certificatesCount || 0, icon: WorkspacePremiumIcon, color: '#7c3aed', bg: 'rgba(124,58,237,0.08)' },
+  ]
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Welcome back!</h1>
-        <p className="text-muted-foreground">
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+      {/* Page header */}
+      <Box>
+        <Typography variant="h4" fontWeight={800} gutterBottom>
+          Welcome back! 👋
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
           Continue your learning journey
-        </p>
-      </div>
+        </Typography>
+      </Box>
 
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Enrolled Courses</CardTitle>
-            <BookOpen className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{enrollments?.length || 0}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">In Progress</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{inProgressCourses.length}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Completed</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{completedCourses.length}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Certificates</CardTitle>
-            <Award className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{certificatesCount || 0}</div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Continue Learning Section */}
-      <div>
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-xl font-semibold">Continue Learning</h2>
-          <Link href="/dashboard/my-courses">
-            <Button variant="ghost" size="sm">View all</Button>
-          </Link>
-        </div>
-        {inProgressCourses.length > 0 ? (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {inProgressCourses.slice(0, 3).map((enrollment) => (
-              <Card key={enrollment.id} className="overflow-hidden">
-                <div className="aspect-video bg-muted">
-                  {enrollment.course?.thumbnail_url ? (
-                    <img
-                      src={enrollment.course.thumbnail_url}
-                      alt={enrollment.course.title}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-full items-center justify-center">
-                      <BookOpen className="h-12 w-12 text-muted-foreground" />
-                    </div>
-                  )}
-                </div>
-                <CardContent className="p-4">
-                  <h3 className="font-semibold line-clamp-1">{enrollment.course?.title}</h3>
-                  <p className="mb-3 text-sm text-muted-foreground">
-                    by {enrollment.course?.instructor?.full_name || 'Instructor'}
-                  </p>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>Progress</span>
-                      <span>{enrollment.progress_percentage}%</span>
-                    </div>
-                    <Progress value={enrollment.progress_percentage} />
-                  </div>
-                  <Link href={`/courses/${enrollment.course?.id}/learn`}>
-                    <Button className="mt-4 w-full" size="sm">
-                      Continue
-                    </Button>
-                  </Link>
+      {/* Stats */}
+      <Grid container spacing={2.5}>
+        {stats.map(stat => {
+          const Icon = stat.icon
+          return (
+            <Grid item xs={6} md={3} key={stat.label}>
+              <Card sx={{ height: '100%' }}>
+                <CardContent sx={{ p: 3 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 2 }}>
+                    <Box
+                      sx={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: 44,
+                        height: 44,
+                        borderRadius: 2,
+                        bgcolor: stat.bg,
+                      }}
+                    >
+                      <Icon sx={{ fontSize: 22, color: stat.color }} />
+                    </Box>
+                  </Box>
+                  <Typography variant="h4" fontWeight={800} color="text.primary">
+                    {stat.value}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary" fontWeight={500}>
+                    {stat.label}
+                  </Typography>
                 </CardContent>
               </Card>
+            </Grid>
+          )
+        })}
+      </Grid>
+
+      {/* Continue Learning */}
+      <Box>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2.5 }}>
+          <Typography variant="h6" fontWeight={700}>Continue Learning</Typography>
+          <Button
+            component={NextLink}
+            href="/dashboard/my-courses"
+            size="small"
+            endIcon={<ChevronRightIcon />}
+            sx={{ color: 'primary.main', fontWeight: 600 }}
+          >
+            View all
+          </Button>
+        </Box>
+
+        {inProgressCourses.length > 0 ? (
+          <Grid container spacing={2.5}>
+            {inProgressCourses.slice(0, 3).map(enrollment => (
+              <Grid item xs={12} sm={6} lg={4} key={enrollment.id}>
+                <Card sx={{ height: '100%', overflow: 'hidden' }}>
+                  {/* Thumbnail */}
+                  <Box sx={{ aspectRatio: '16/9', bgcolor: '#f1f5f9', position: 'relative', overflow: 'hidden' }}>
+                    {enrollment.course?.thumbnail_url ? (
+                      <Box
+                        component="img"
+                        src={enrollment.course.thumbnail_url}
+                        alt={enrollment.course.title}
+                        sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      />
+                    ) : (
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                        <MenuBookIcon sx={{ fontSize: 48, color: '#cbd5e1' }} />
+                      </Box>
+                    )}
+                  </Box>
+
+                  <CardContent sx={{ p: 2.5 }}>
+                    <Typography variant="subtitle2" fontWeight={700} noWrap gutterBottom>
+                      {enrollment.course?.title}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary" sx={{ mb: 2, display: 'block' }}>
+                      by {enrollment.course?.instructor?.full_name || 'Instructor'}
+                    </Typography>
+
+                    <Box sx={{ mb: 2 }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.75 }}>
+                        <Typography variant="caption" color="text.secondary">Progress</Typography>
+                        <Typography variant="caption" fontWeight={600} color="primary.main">
+                          {enrollment.progress_percentage}%
+                        </Typography>
+                      </Box>
+                      <LinearProgress value={enrollment.progress_percentage} variant="determinate" />
+                    </Box>
+
+                    <Button
+                      component={NextLink}
+                      href={`/courses/${enrollment.course?.id}/learn`}
+                      variant="contained"
+                      size="small"
+                      fullWidth
+                      endIcon={<ChevronRightIcon />}
+                    >
+                      Continue
+                    </Button>
+                  </CardContent>
+                </Card>
+              </Grid>
             ))}
-          </div>
+          </Grid>
         ) : (
-          <Card className="py-12 text-center">
-            <CardContent>
-              <BookOpen className="mx-auto h-12 w-12 text-muted-foreground" />
-              <h3 className="mt-4 text-lg font-semibold">No courses yet</h3>
-              <p className="mb-4 text-muted-foreground">
+          <Card>
+            <CardContent sx={{ py: 8, textAlign: 'center' }}>
+              <Box
+                sx={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: 72,
+                  height: 72,
+                  borderRadius: '50%',
+                  bgcolor: 'rgba(37,99,235,0.08)',
+                  mb: 3,
+                }}
+              >
+                <MenuBookIcon sx={{ fontSize: 36, color: 'primary.main' }} />
+              </Box>
+              <Typography variant="h6" fontWeight={700} gutterBottom>
+                No courses yet
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
                 Start your learning journey by enrolling in a course
-              </p>
-              <Link href="/courses">
-                <Button>Browse Courses</Button>
-              </Link>
+              </Typography>
+              <Button
+                component={NextLink}
+                href="/courses"
+                variant="contained"
+                size="large"
+              >
+                Browse Courses
+              </Button>
             </CardContent>
           </Card>
         )}
-      </div>
-    </div>
+      </Box>
+    </Box>
   )
 }

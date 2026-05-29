@@ -33,6 +33,7 @@ import FavoriteIcon from '@mui/icons-material/Favorite'
 import EmailIcon from '@mui/icons-material/Email'
 import PhoneIcon from '@mui/icons-material/Phone'
 import LocationOnIcon from '@mui/icons-material/LocationOn'
+import MenuBookIcon from '@mui/icons-material/MenuBook'
 import { MuiThemeProvider } from '@/components/mui-theme-provider'
 import { useState } from 'react'
 

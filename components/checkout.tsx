@@ -3,24 +3,26 @@
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Button } from '@/components/ui/button'
-import { formatDuration } from '@/lib/duration'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import {
-  CheckCircle2,
-  Copy,
-  Loader2,
-  AlertCircle,
-  Phone,
-  User,
-  Banknote,
-  ImagePlus,
-  X,
-} from 'lucide-react'
 import { toast } from 'sonner'
 import { formatMMK } from '@/lib/format-currency'
+import {
+  Box,
+  Button,
+  TextField,
+  Typography,
+  CircularProgress,
+  InputAdornment,
+} from '@mui/material'
+import CheckCircleIcon from '@mui/icons-material/CheckCircle'
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline'
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'
+import PhoneIcon from '@mui/icons-material/Phone'
+import PersonOutlinedIcon from '@mui/icons-material/PersonOutlined'
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney'
+import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate'
+import CloseIcon from '@mui/icons-material/Close'
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline'
+import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 
 interface MyanmarPaymentCheckoutProps {
   courseId: string
@@ -34,9 +36,7 @@ const PAYMENT_METHODS = [
   {
     id: 'kbz',
     name: 'KBZPay',
-    color: 'from-blue-600 to-blue-800',
-    iconBg: 'bg-blue-100 dark:bg-blue-900/40',
-    iconColor: 'text-blue-700 dark:text-blue-400',
+    gradient: 'linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%)',
     accountName: 'Htet Oo Wai Yan',
     phoneNumber: '09443167419',
     logo: '🏦',
@@ -45,9 +45,7 @@ const PAYMENT_METHODS = [
   {
     id: 'wave',
     name: 'WavePay',
-    color: 'from-orange-500 to-red-600',
-    iconBg: 'bg-orange-100 dark:bg-orange-900/40',
-    iconColor: 'text-orange-700 dark:text-orange-400',
+    gradient: 'linear-gradient(135deg, #ea580c 0%, #b91c1c 100%)',
     accountName: 'Htet Oo Wai Yan',
     phoneNumber: '09950411201',
     logo: '🌊',
@@ -70,7 +68,6 @@ export function MyanmarPaymentCheckout({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
 
-  // Screenshot upload state
   const [screenshotFile, setScreenshotFile] = useState<File | null>(null)
   const [screenshotPreview, setScreenshotPreview] = useState<string | null>(null)
   const [isUploading, setIsUploading] = useState(false)
@@ -101,7 +98,7 @@ export function MyanmarPaymentCheckout({
 
     setScreenshotFile(file)
     const reader = new FileReader()
-    reader.onload = (ev) => setScreenshotPreview(ev.target?.result as string)
+    reader.onload = ev => setScreenshotPreview(ev.target?.result as string)
     reader.readAsDataURL(file)
   }
 
@@ -154,7 +151,6 @@ export function MyanmarPaymentCheckout({
       return
     }
 
-    // Upload screenshot if provided
     let proofPath: string | null = null
     if (screenshotFile) {
       proofPath = await uploadScreenshot()
@@ -164,7 +160,6 @@ export function MyanmarPaymentCheckout({
       }
     }
 
-    // Create a pending payment record
     const { error: paymentError } = await supabase.from('payments').insert({
       user_id: user.id,
       course_id: courseId,
@@ -187,292 +182,416 @@ export function MyanmarPaymentCheckout({
     setSubmitted(true)
   }
 
+  // ── Success state ─────────────────────────────────────────────────────────
   if (submitted) {
     return (
-      <div className="flex flex-col items-center justify-center py-8 text-center space-y-4">
-        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/10">
-          <CheckCircle2 className="h-10 w-10 text-primary" />
-        </div>
-        <h2 className="text-2xl font-bold">Payment Submitted!</h2>
-        <p className="text-muted-foreground max-w-sm">
+      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 4, textAlign: 'center', gap: 2.5 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: 80,
+            height: 80,
+            borderRadius: '50%',
+            bgcolor: 'rgba(37,99,235,0.1)',
+          }}
+        >
+          <CheckCircleIcon sx={{ fontSize: 40, color: 'primary.main' }} />
+        </Box>
+        <Typography variant="h5" fontWeight={800}>Payment Submitted!</Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 320 }}>
           သင်၏ payment confirmation ကို admin မှ စစ်ဆေးပြီး{' '}
           <strong>24 နာရီအတွင်း</strong> course access ပေးပါမည်။
-        </p>
-        <div className="rounded-lg bg-muted/50 border p-4 text-sm text-left w-full max-w-xs space-y-1">
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Course:</span>
-            <span className="font-medium truncate max-w-[160px]">{courseName}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Amount:</span>
-            <span className="font-medium">{formatMMK(priceInKyats)}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Method:</span>
-            <span className="font-medium">{method.name}</span>
-          </div>
-        </div>
-        <Button onClick={() => router.push('/dashboard')} className="mt-2">
+        </Typography>
+
+        <Box
+          sx={{
+            width: '100%',
+            maxWidth: 280,
+            borderRadius: 2,
+            border: '1px solid #e2e8f0',
+            bgcolor: '#f8fafc',
+            p: 2,
+            textAlign: 'left',
+          }}
+        >
+          {[
+            { label: 'Course', value: courseName },
+            { label: 'Amount', value: formatMMK(priceInKyats) },
+            { label: 'Method', value: method.name },
+          ].map(row => (
+            <Box key={row.label} sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.75, '&:last-child': { mb: 0 } }}>
+              <Typography variant="caption" color="text.secondary">{row.label}:</Typography>
+              <Typography variant="caption" fontWeight={600} sx={{ maxWidth: 160 }} noWrap>{row.value}</Typography>
+            </Box>
+          ))}
+        </Box>
+
+        <Button variant="contained" onClick={() => router.push('/dashboard')} sx={{ mt: 1 }}>
           Go to Dashboard
         </Button>
-      </div>
+      </Box>
     )
   }
 
+  // ── Confirm step ──────────────────────────────────────────────────────────
   if (step === 'confirm') {
     return (
-      <div className="space-y-5">
-        <div className="flex items-center gap-3">
-          <button
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+        {/* Back + title */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <Button
+            size="small"
+            startIcon={<ArrowBackIcon />}
             onClick={() => setStep('select')}
-            className="text-sm text-muted-foreground hover:text-foreground"
+            sx={{ color: 'text.secondary', fontWeight: 500 }}
           >
-            ← Back
-          </button>
-          <h2 className="text-xl font-bold">Confirm Payment</h2>
-        </div>
+            Back
+          </Button>
+          <Typography variant="h6" fontWeight={700}>Confirm Payment</Typography>
+        </Box>
 
-        {/* Payment summary */}
-        <div className={`rounded-xl bg-gradient-to-br ${method.color} p-4 text-white space-y-1`}>
-          <p className="text-white/80 text-sm">Paying via {method.name}</p>
-          <p className="text-2xl font-bold">{formatMMK(priceInKyats)}</p>
-          <p className="text-white/80 text-sm truncate">{courseName}</p>
-        </div>
+        {/* Amount banner */}
+        <Box
+          sx={{
+            borderRadius: 2,
+            p: 2.5,
+            background: method.gradient,
+            color: 'white',
+          }}
+        >
+          <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+            Paying via {method.name}
+          </Typography>
+          <Typography variant="h4" fontWeight={800} sx={{ my: 0.25 }}>
+            {formatMMK(priceInKyats)}
+          </Typography>
+          <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)' }} noWrap>
+            {courseName}
+          </Typography>
+        </Box>
 
-        {/* Account info reminder */}
-        <div className="rounded-lg border bg-muted/30 p-3 space-y-2 text-sm">
-          <p className="font-medium text-xs uppercase tracking-wide text-muted-foreground">
+        {/* Account info */}
+        <Box sx={{ borderRadius: 2, border: '1px solid #e2e8f0', bgcolor: '#f8fafc', p: 2 }}>
+          <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ letterSpacing: 0.5, textTransform: 'uppercase', display: 'block', mb: 1.5 }}>
             Transfer to:
-          </p>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <User className="h-4 w-4 text-muted-foreground" />
-              <span>{method.accountName}</span>
-            </div>
-          </div>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Phone className="h-4 w-4 text-muted-foreground" />
-              <span className="font-mono">{method.phoneNumber}</span>
-            </div>
-            <button
+          </Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <PersonOutlinedIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+              <Typography variant="body2">{method.accountName}</Typography>
+            </Box>
+          </Box>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <PhoneIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+              <Typography variant="body2" sx={{ fontFamily: 'monospace', fontWeight: 600 }}>{method.phoneNumber}</Typography>
+            </Box>
+            <Button
+              size="small"
               onClick={() => copyToClipboard(method.phoneNumber, 'Phone number')}
-              className="text-primary hover:text-primary/80"
+              startIcon={<ContentCopyIcon sx={{ fontSize: '14px !important' }} />}
+              sx={{ minWidth: 0, fontSize: '0.75rem', py: 0.5 }}
             >
-              <Copy className="h-3.5 w-3.5" />
-            </button>
-          </div>
-        </div>
+              Copy
+            </Button>
+          </Box>
+        </Box>
 
-        {/* Proof of payment form */}
-        <div className="space-y-4">
-          <div className="space-y-1.5">
-            <Label htmlFor="txn-id">
-              Transaction ID / Reference No. <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="txn-id"
-              placeholder="e.g. TXN123456789"
-              value={transactionId}
-              onChange={e => setTransactionId(e.target.value)}
-            />
-            <p className="text-xs text-muted-foreground">
-              {method.name} app မှ transaction success screen ၌ မြင်ရသော reference number
-            </p>
-          </div>
+        {/* Form fields */}
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <TextField
+            id="txn-id"
+            label="Transaction ID / Reference No. *"
+            placeholder="e.g. TXN123456789"
+            value={transactionId}
+            onChange={e => setTransactionId(e.target.value)}
+            fullWidth
+            helperText={`${method.name} app မှ transaction success screen ၌ မြင်ရသော reference number`}
+          />
 
-          <div className="space-y-1.5">
-            <Label htmlFor="sender-name">
-              Sender Name (ငွေလွှဲသူ) <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="sender-name"
-              placeholder="Your name as shown in the app"
-              value={senderName}
-              onChange={e => setSenderName(e.target.value)}
-            />
-          </div>
+          <TextField
+            id="sender-name"
+            label="Sender Name (ငွေလွှဲသူ) *"
+            placeholder="Your name as shown in the app"
+            value={senderName}
+            onChange={e => setSenderName(e.target.value)}
+            fullWidth
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <PersonOutlinedIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+                </InputAdornment>
+              ),
+            }}
+          />
 
-          {/* Screenshot Upload */}
-          <div className="space-y-2">
-            <Label>Payment Screenshot (Required)</Label>
+          {/* Screenshot upload */}
+          <Box>
+            <Typography variant="body2" fontWeight={500} sx={{ mb: 1 }}>
+              Payment Screenshot (Required)
+            </Typography>
             {screenshotPreview ? (
-              <div className="relative inline-block">
-                <img
+              <Box sx={{ position: 'relative', display: 'inline-block' }}>
+                <Box
+                  component="img"
                   src={screenshotPreview}
-                  alt="Payment screenshot preview"
-                  className="h-32 w-auto rounded-lg border object-cover"
+                  alt="Payment screenshot"
+                  sx={{ height: 120, width: 'auto', borderRadius: 2, border: '1px solid #e2e8f0', objectFit: 'cover' }}
                 />
-                <button
-                  type="button"
+                <Box
                   onClick={removeScreenshot}
-                  className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground shadow"
+                  sx={{
+                    position: 'absolute',
+                    top: -8,
+                    right: -8,
+                    width: 22,
+                    height: 22,
+                    borderRadius: '50%',
+                    bgcolor: 'error.main',
+                    color: 'white',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    boxShadow: 2,
+                  }}
                 >
-                  <X className="h-3 w-3" />
-                </button>
-              </div>
+                  <CloseIcon sx={{ fontSize: 12 }} />
+                </Box>
+              </Box>
             ) : (
-              <button
-                type="button"
+              <Box
                 onClick={() => fileInputRef.current?.click()}
-                className="flex w-full items-center gap-3 rounded-lg border-2 border-dashed border-border p-4 text-sm text-muted-foreground hover:border-primary/50 hover:bg-muted/30 transition-colors"
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 2,
+                  borderRadius: 2,
+                  border: '2px dashed #cbd5e1',
+                  p: 2.5,
+                  cursor: 'pointer',
+                  transition: 'all 0.15s',
+                  '&:hover': { borderColor: 'primary.main', bgcolor: 'rgba(37,99,235,0.03)' },
+                }}
               >
-                <ImagePlus className="h-5 w-5 flex-shrink-0" />
-                <div className="text-left">
-                  <p className="font-medium text-foreground">Upload Screenshot</p>
-                  <p className="text-xs">Transfer success screen ၏ screenshot ထည့်ပေးပါ (JPEG, PNG, max 5MB)</p>
-                </div>
-              </button>
+                <AddPhotoAlternateIcon sx={{ color: 'text.secondary', fontSize: 28, flexShrink: 0 }} />
+                <Box>
+                  <Typography variant="body2" fontWeight={600}>Upload Screenshot</Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    Transfer success screen ၏ screenshot ထည့်ပေးပါ (JPEG, PNG, max 5MB)
+                  </Typography>
+                </Box>
+              </Box>
             )}
             <input
               ref={fileInputRef}
               type="file"
               accept="image/jpeg,image/png,image/webp,image/gif"
-              className="hidden"
+              style={{ display: 'none' }}
               onChange={handleFileSelect}
             />
-          </div>
+          </Box>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="notes">Additional Notes (Required)</Label>
-            <Textarea
-              id="notes"
-              placeholder="Any additional info for admin..."
-              value={notes}
-              onChange={e => setNotes(e.target.value)}
-              rows={2}
-            />
-          </div>
-        </div>
+          <TextField
+            id="notes"
+            label="Additional Notes (Required)"
+            placeholder="Any additional info for admin..."
+            value={notes}
+            onChange={e => setNotes(e.target.value)}
+            fullWidth
+            multiline
+            rows={2}
+          />
+        </Box>
 
-        <div className="flex gap-3">
+        {/* Actions */}
+        <Box sx={{ display: 'flex', gap: 1.5 }}>
           <Button
-            className="flex-1"
+            variant="contained"
+            fullWidth
             onClick={handleSubmitPayment}
             disabled={isSubmitting || isUploading || !transactionId.trim() || !senderName.trim() || !screenshotFile || !notes.trim()}
+            startIcon={isSubmitting || isUploading
+              ? <CircularProgress size={16} color="inherit" />
+              : <CheckCircleOutlineIcon />}
+            sx={{ py: 1.25 }}
           >
-            {isSubmitting || isUploading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {isUploading ? 'Uploading...' : 'Submitting...'}
-              </>
-            ) : (
-              <>
-                <CheckCircle2 className="mr-2 h-4 w-4" />
-                Confirm Payment
-              </>
-            )}
+            {isUploading ? 'Uploading…' : isSubmitting ? 'Submitting…' : 'Confirm Payment'}
           </Button>
           {onCancel && (
-            <Button variant="outline" onClick={onCancel} disabled={isSubmitting || isUploading}>
+            <Button variant="outlined" onClick={onCancel} disabled={isSubmitting || isUploading} sx={{ flexShrink: 0 }}>
               Cancel
             </Button>
           )}
-        </div>
+        </Box>
 
-        <p className="text-xs text-muted-foreground text-center">
-          <AlertCircle className="inline h-3 w-3 mr-1" />
-          Admin မှ payment verify လုပ်ပြီးမှ course access ရမည်
-        </p>
-      </div>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.75 }}>
+          <ErrorOutlineIcon sx={{ fontSize: 14, color: 'text.secondary' }} />
+          <Typography variant="caption" color="text.secondary">
+            Admin မှ payment verify လုပ်ပြီးမှ course access ရမည်
+          </Typography>
+        </Box>
+      </Box>
     )
   }
 
+  // ── Method selection step ─────────────────────────────────────────────────
   return (
-    <div className="space-y-4">
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
       {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h2 className="text-lg font-bold">Complete Your Purchase</h2>
-          <p className="text-muted-foreground text-xs mt-0.5 line-clamp-1">
+      <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+        <Box>
+          <Typography variant="h6" fontWeight={700}>Complete Your Purchase</Typography>
+          <Typography variant="caption" color="text.secondary" noWrap sx={{ display: 'block', maxWidth: 260 }}>
             {courseName}
-          </p>
-        </div>
-        <span className="text-xl font-bold text-primary shrink-0 ml-2">{formatMMK(priceInKyats)}</span>
-      </div>
+          </Typography>
+        </Box>
+        <Typography variant="h6" fontWeight={800} color="primary.main" sx={{ flexShrink: 0, ml: 1 }}>
+          {formatMMK(priceInKyats)}
+        </Typography>
+      </Box>
 
-      {/* Method selector — compact */}
-      <div>
-        <p className="text-xs font-medium text-muted-foreground mb-2">Select Payment Method:</p>
-        <div className="grid grid-cols-2 gap-2">
+      {/* Method selector */}
+      <Box>
+        <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ display: 'block', mb: 1, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+          Select Payment Method:
+        </Typography>
+        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5 }}>
           {PAYMENT_METHODS.map(pm => (
-            <button
+            <Box
               key={pm.id}
               onClick={() => setSelectedMethod(pm.id)}
-              className={`relative flex items-center gap-2 rounded-lg border-2 p-3 text-left transition-all ${selectedMethod === pm.id
-                  ? 'border-primary bg-primary/5'
-                  : 'border-border hover:border-muted-foreground/40'
-                }`}
+              sx={{
+                position: 'relative',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1.5,
+                borderRadius: 2,
+                border: '2px solid',
+                borderColor: selectedMethod === pm.id ? 'primary.main' : '#e2e8f0',
+                bgcolor: selectedMethod === pm.id ? 'rgba(37,99,235,0.04)' : 'white',
+                p: 2,
+                cursor: 'pointer',
+                transition: 'all 0.15s',
+                '&:hover': { borderColor: selectedMethod === pm.id ? 'primary.main' : '#94a3b8' },
+              }}
             >
               {selectedMethod === pm.id && (
-                <CheckCircle2 className="absolute right-2 top-2 h-3.5 w-3.5 text-primary" />
+                <CheckCircleIcon
+                  sx={{
+                    position: 'absolute',
+                    top: 8,
+                    right: 8,
+                    fontSize: 16,
+                    color: 'primary.main',
+                  }}
+                />
               )}
-              <span className="text-2xl">{pm.logo}</span>
-              <span className="text-sm font-semibold">{pm.name}</span>
-            </button>
+              <Box sx={{ fontSize: '1.5rem', lineHeight: 1 }}>{pm.logo}</Box>
+              <Typography variant="body2" fontWeight={600}>{pm.name}</Typography>
+            </Box>
           ))}
-        </div>
-      </div>
+        </Box>
+      </Box>
 
-      {/* Account info — compact gradient */}
-      <div className={`rounded-xl bg-gradient-to-br ${method.color} p-4 text-white`}>
-        <p className="text-xs text-white/70 mb-2">{method.instruction}</p>
-        <div className="grid grid-cols-2 gap-2 text-sm bg-white/10 rounded-lg p-3">
-          <div>
-            <p className="text-white/60 text-xs">Account Name</p>
-            <p className="font-semibold">{method.accountName}</p>
-          </div>
-          <div>
-            <p className="text-white/60 text-xs">Phone Number</p>
-            <div className="flex items-center gap-1.5">
-              <p className="font-mono font-bold">{method.phoneNumber}</p>
-              <button
+      {/* Account info gradient card */}
+      <Box sx={{ borderRadius: 2, background: method.gradient, p: 2.5, color: 'white' }}>
+        <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)', display: 'block', mb: 2 }}>
+          {method.instruction}
+        </Typography>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: 1.5,
+            borderRadius: 1.5,
+            bgcolor: 'rgba(255,255,255,0.12)',
+            p: 2,
+          }}
+        >
+          <Box>
+            <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.6)' }}>Account Name</Typography>
+            <Typography variant="body2" fontWeight={600} sx={{ mt: 0.25 }}>{method.accountName}</Typography>
+          </Box>
+          <Box>
+            <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.6)' }}>Phone Number</Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.25 }}>
+              <Typography variant="body2" fontWeight={700} sx={{ fontFamily: 'monospace' }}>{method.phoneNumber}</Typography>
+              <Box
                 onClick={() => copyToClipboard(method.phoneNumber, 'Phone number')}
-                className="rounded bg-white/20 p-0.5 hover:bg-white/30 transition-colors"
-                title="Copy"
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: 22,
+                  height: 22,
+                  borderRadius: 1,
+                  bgcolor: 'rgba(255,255,255,0.2)',
+                  cursor: 'pointer',
+                  '&:hover': { bgcolor: 'rgba(255,255,255,0.3)' },
+                }}
               >
-                <Copy className="h-3 w-3" />
-              </button>
-            </div>
-          </div>
-          <div className="col-span-2 border-t border-white/20 pt-2 flex items-center justify-between">
-            <span className="text-white/70 text-xs flex items-center gap-1">
-              <Banknote className="h-3.5 w-3.5" /> Amount to transfer
-            </span>
-            <span className="font-bold">{formatMMK(priceInKyats)}</span>
-          </div>
-        </div>
-      </div>
+                <ContentCopyIcon sx={{ fontSize: 12 }} />
+              </Box>
+            </Box>
+          </Box>
+          <Box sx={{ gridColumn: '1 / -1', borderTop: '1px solid rgba(255,255,255,0.2)', pt: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'rgba(255,255,255,0.7)' }}>
+              <AttachMoneyIcon sx={{ fontSize: 16 }} />
+              <Typography variant="caption">Amount to transfer</Typography>
+            </Box>
+            <Typography variant="body2" fontWeight={800}>{formatMMK(priceInKyats)}</Typography>
+          </Box>
+        </Box>
+      </Box>
 
-      {/* Steps guide — compact horizontal */}
-      <div className="flex gap-1.5 text-xs text-muted-foreground">
-        {[
-          'Open app',
-          `Transfer ${formatMMK(priceInKyats)}`,
-          'Screenshot it',
-          'Click "I have paid"',
-        ].map((s, i) => (
-          <div key={i} className="flex items-center gap-1 min-w-0">
-            <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground">
+      {/* Steps guide */}
+      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+        {['Open app', `Transfer ${formatMMK(priceInKyats)}`, 'Screenshot it', 'Click "I have paid"'].map((s, i) => (
+          <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 0.75, minWidth: 0 }}>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 18,
+                height: 18,
+                borderRadius: '50%',
+                bgcolor: 'primary.main',
+                color: 'white',
+                fontSize: '0.6rem',
+                fontWeight: 700,
+                flexShrink: 0,
+              }}
+            >
               {i + 1}
-            </span>
-            <span className="hidden sm:block truncate">{s}</span>
-            {i < 3 && <span className="shrink-0 text-muted-foreground/40">→</span>}
-          </div>
+            </Box>
+            <Typography variant="caption" color="text.secondary" noWrap sx={{ display: { xs: 'none', sm: 'block' } }}>
+              {s}
+            </Typography>
+            {i < 3 && <Typography variant="caption" color="text.disabled" sx={{ flexShrink: 0 }}>→</Typography>}
+          </Box>
         ))}
-      </div>
+      </Box>
 
       {/* Actions */}
-      <div className="flex gap-2 pt-1">
-        <Button className="flex-1" onClick={() => setStep('confirm')}>
+      <Box sx={{ display: 'flex', gap: 1.5 }}>
+        <Button
+          variant="contained"
+          fullWidth
+          onClick={() => setStep('confirm')}
+          sx={{ py: 1.25 }}
+        >
           I have paid →
         </Button>
         {onCancel && (
-          <Button variant="outline" onClick={onCancel}>
+          <Button variant="outlined" onClick={onCancel} sx={{ flexShrink: 0 }}>
             Cancel
           </Button>
         )}
-      </div>
-    </div>
+      </Box>
+    </Box>
   )
 }

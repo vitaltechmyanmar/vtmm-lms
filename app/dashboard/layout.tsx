@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { DashboardSidebar } from '@/components/dashboard/sidebar'
 import { DashboardHeader } from '@/components/dashboard/header'
 import { MobileBottomNav } from '@/components/dashboard/mobile-bottom-nav'
+import { MuiThemeProvider } from '@/components/mui-theme-provider'
 import type { Profile } from '@/lib/types'
 
 export default async function DashboardLayout({
@@ -29,14 +30,17 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="flex min-h-screen bg-background">
-      <DashboardSidebar profile={profile as Profile} />
-      <div className="flex flex-1 flex-col lg:pl-64">
-        <DashboardHeader profile={profile as Profile} />
-        <main className="flex-1 p-6 pb-24 lg:pb-6">{children}</main>
+    <MuiThemeProvider>
+      <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#f8fafc' }}>
+        <DashboardSidebar profile={profile as Profile} />
+        <div style={{ display: 'flex', flex: 1, flexDirection: 'column', paddingLeft: 0 }} className="lg:pl-64">
+          <DashboardHeader profile={profile as Profile} />
+          <main style={{ flex: 1, padding: '24px', paddingBottom: '96px' }} className="lg:pb-6">
+            {children}
+          </main>
+        </div>
+        <MobileBottomNav profile={profile as Profile} />
       </div>
-      <MobileBottomNav profile={profile as Profile} />
-    </div>
+    </MuiThemeProvider>
   )
 }
-

@@ -1,14 +1,24 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
+import NextLink from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Loader2, ArrowLeft, CheckCircle } from 'lucide-react'
 import { toast } from 'sonner'
+import {
+  Box,
+  Button,
+  TextField,
+  Typography,
+  Paper,
+  CircularProgress,
+  InputAdornment,
+  Alert,
+} from '@mui/material'
+import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined'
+import ArrowBackIcon from '@mui/icons-material/ArrowBack'
+import MarkEmailReadIcon from '@mui/icons-material/MarkEmailRead'
+import SendIcon from '@mui/icons-material/Send'
+import { MuiThemeProvider } from '@/components/mui-theme-provider'
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
@@ -34,67 +44,154 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-2 text-center">
-          <img src="/vitaltech_logo.png" alt="Vital Tech LearnHub" className="mx-auto h-12 w-12" />
-          <CardTitle className="text-2xl font-bold">Reset your password</CardTitle>
-          <CardDescription>
-            {sent
-              ? "Check your inbox for a reset link"
-              : "Enter your email and we'll send you a reset link"}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+    <MuiThemeProvider>
+      <Box
+        sx={{
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'linear-gradient(135deg, #f0f7ff 0%, #ffffff 50%, #ede9fe 100%)',
+          px: 2,
+          position: 'relative',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            inset: 0,
+            backgroundImage:
+              'linear-gradient(to right,rgba(100,116,139,.08) 1px,transparent 1px),linear-gradient(to bottom,rgba(100,116,139,.08) 1px,transparent 1px)',
+            backgroundSize: '48px 48px',
+            pointerEvents: 'none',
+          },
+        }}
+      >
+        <Paper
+          elevation={0}
+          sx={{
+            width: '100%',
+            maxWidth: 440,
+            p: { xs: 3, sm: 5 },
+            borderRadius: 3,
+            border: '1px solid #e2e8f0',
+            boxShadow: '0 4px 24px rgba(0,0,0,0.06)',
+            bgcolor: 'white',
+            position: 'relative',
+            zIndex: 1,
+          }}
+        >
+          {/* Logo */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 4 }}>
+            <Box component={NextLink} href="/" sx={{ display: 'flex', alignItems: 'center', gap: 1.5, textDecoration: 'none' }}>
+              <Box component="img" src="/vitaltech_logo.png" alt="logo" sx={{ height: 40, width: 40 }} />
+              <Typography variant="h6" fontWeight={700} color="text.primary">Vital Tech LearnHub</Typography>
+            </Box>
+          </Box>
+
           {sent ? (
-            <div className="space-y-4 text-center">
-              <div className="flex justify-center">
-                <CheckCircle className="h-12 w-12 text-primary" />
-              </div>
-              <p className="text-sm text-muted-foreground">
-                We sent a password reset link to <strong>{email}</strong>. Check your email and follow the instructions.
-              </p>
-              <Button asChild variant="outline" className="w-full">
-                <Link href="/auth/login">Back to Sign In</Link>
+            // ── Success state ───────────────────────────────────────────────
+            <Box sx={{ textAlign: 'center' }}>
+              <Box
+                sx={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: 72,
+                  height: 72,
+                  borderRadius: '50%',
+                  bgcolor: 'rgba(37,99,235,0.1)',
+                  mb: 3,
+                }}
+              >
+                <MarkEmailReadIcon sx={{ fontSize: 36, color: 'primary.main' }} />
+              </Box>
+              <Typography variant="h5" fontWeight={700} gutterBottom>
+                Check your email
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                {'We sent a password reset link to '}
+                <Box component="strong" sx={{ color: 'text.primary' }}>{email}</Box>
+                {'. Check your email and follow the instructions.'}
+              </Typography>
+              <Alert severity="info" sx={{ mb: 3, borderRadius: 2, textAlign: 'left' }}>
+                Didn't receive the email? Check your spam folder or try again.
+              </Alert>
+              <Button
+                component={NextLink}
+                href="/auth/login"
+                variant="contained"
+                fullWidth
+                size="large"
+                startIcon={<ArrowBackIcon />}
+                sx={{ py: 1.5 }}
+              >
+                Back to Sign In
               </Button>
-            </div>
+            </Box>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email address</Label>
-                <Input
+            // ── Form state ──────────────────────────────────────────────────
+            <>
+              <Typography variant="h4" fontWeight={800} gutterBottom>
+                Reset password
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
+                {"Enter your email and we'll send you a link to reset your password."}
+              </Typography>
+
+              <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                <TextField
                   id="email"
+                  label="Email address"
                   type="email"
                   placeholder="you@example.com"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   required
                   disabled={isLoading}
+                  fullWidth
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <EmailOutlinedIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+                      </InputAdornment>
+                    ),
+                  }}
                 />
-              </div>
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Sending...
-                  </>
-                ) : (
-                  'Send Reset Link'
-                )}
-              </Button>
-              <div className="text-center">
-                <Link
-                  href="/auth/login"
-                  className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+
+                <Button
+                  type="submit"
+                  variant="contained"
+                  size="large"
+                  fullWidth
+                  disabled={isLoading}
+                  endIcon={isLoading ? <CircularProgress size={18} color="inherit" /> : <SendIcon />}
+                  sx={{ py: 1.5 }}
                 >
-                  <ArrowLeft className="h-3.5 w-3.5" />
-                  Back to Sign In
-                </Link>
-              </div>
-            </form>
+                  {isLoading ? 'Sending…' : 'Send Reset Link'}
+                </Button>
+
+                <Box sx={{ textAlign: 'center' }}>
+                  <Box
+                    component={NextLink}
+                    href="/auth/login"
+                    sx={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 0.5,
+                      fontSize: '0.875rem',
+                      color: 'text.secondary',
+                      textDecoration: 'none',
+                      '&:hover': { color: 'primary.main' },
+                    }}
+                  >
+                    <ArrowBackIcon sx={{ fontSize: 14 }} />
+                    Back to Sign In
+                  </Box>
+                </Box>
+              </Box>
+            </>
           )}
-        </CardContent>
-      </Card>
-    </div>
+        </Paper>
+      </Box>
+    </MuiThemeProvider>
   )
 }
