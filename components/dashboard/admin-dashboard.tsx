@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import NextLink from 'next/link'
+import Link from 'next/link'
 import {
   Box,
   Button,
@@ -154,51 +154,51 @@ export async function AdminDashboard({ userId }: AdminDashboardProps) {
           const Icon = stat.icon
           return (
             <Grid item xs={6} md={3} key={stat.label}>
-              <Card
-                component={NextLink}
-                href={stat.href}
-                sx={{
-                  height: '100%',
-                  textDecoration: 'none',
-                  display: 'block',
-                  transition: 'all 0.2s',
-                  outline: stat.highlight ? `2px solid rgba(220,38,38,0.35)` : 'none',
-                  '&:hover': {
-                    transform: 'translateY(-2px)',
-                    boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
-                  },
-                }}
-              >
-                <CardContent sx={{ p: 3 }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                    <Box
-                      sx={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        width: 44,
-                        height: 44,
-                        borderRadius: 2,
-                        bgcolor: stat.bg,
-                      }}
-                    >
-                      <Icon sx={{ fontSize: 22, color: stat.color }} />
+              <Link href={stat.href} style={{ textDecoration: 'none', display: 'block', height: '100%' }}>
+                <Card
+                  sx={{
+                    height: '100%',
+                    textDecoration: 'none',
+                    display: 'block',
+                    transition: 'all 0.2s',
+                    outline: stat.highlight ? `2px solid rgba(220,38,38,0.35)` : 'none',
+                    '&:hover': {
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
+                    },
+                  }}
+                >
+                  <CardContent sx={{ p: 3 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                      <Box
+                        sx={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          width: 44,
+                          height: 44,
+                          borderRadius: 2,
+                          bgcolor: stat.bg,
+                        }}
+                      >
+                        <Icon sx={{ fontSize: 22, color: stat.color }} />
+                      </Box>
+                      <ChevronRightIcon sx={{ fontSize: 16, color: 'text.disabled' }} />
                     </Box>
-                    <ChevronRightIcon sx={{ fontSize: 16, color: 'text.disabled', opacity: 0, '.MuiCard-root:hover &': { opacity: 1 }, transition: 'opacity 0.2s' }} />
-                  </Box>
-                  <Typography variant="h4" fontWeight={800} color="text.primary">
-                    {stat.value}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary" fontWeight={500} display="block">
-                    {stat.label}
-                  </Typography>
-                  {stat.sub && (
-                    <Typography variant="caption" color="text.disabled" display="block" sx={{ mt: 0.25 }}>
-                      {stat.sub}
+                    <Typography variant="h4" fontWeight={800} color="text.primary">
+                      {stat.value}
                     </Typography>
-                  )}
-                </CardContent>
-              </Card>
+                    <Typography variant="caption" color="text.secondary" fontWeight={500} display="block">
+                      {stat.label}
+                    </Typography>
+                    {stat.sub && (
+                      <Typography variant="caption" color="text.disabled" display="block" sx={{ mt: 0.25 }}>
+                        {stat.sub}
+                      </Typography>
+                    )}
+                  </CardContent>
+                </Card>
+              </Link>
             </Grid>
           )
         })}
@@ -221,15 +221,11 @@ export async function AdminDashboard({ userId }: AdminDashboardProps) {
             <Typography variant="subtitle1" fontWeight={700}>Recent Users</Typography>
             <Typography variant="caption" color="text.secondary">Latest platform registrations</Typography>
           </Box>
-          <Button
-            component={NextLink}
-            href="/dashboard/admin/users"
-            size="small"
-            endIcon={<ChevronRightIcon />}
-            sx={{ fontWeight: 600 }}
-          >
-            View all
-          </Button>
+          <Link href="/dashboard/admin/users" style={{ textDecoration: 'none' }}>
+            <Button size="small" endIcon={<ChevronRightIcon />} sx={{ fontWeight: 600 }}>
+              View all
+            </Button>
+          </Link>
         </Box>
 
         <Box>

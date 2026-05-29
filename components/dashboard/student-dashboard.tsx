@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import NextLink from 'next/link'
+import Link from 'next/link'
 import {
   Box,
   Button,
@@ -105,15 +105,15 @@ export async function StudentDashboard({ userId }: StudentDashboardProps) {
       <Box>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2.5 }}>
           <Typography variant="h6" fontWeight={700}>Continue Learning</Typography>
-          <Button
-            component={NextLink}
-            href="/dashboard/my-courses"
-            size="small"
-            endIcon={<ChevronRightIcon />}
-            sx={{ color: 'primary.main', fontWeight: 600 }}
-          >
-            View all
-          </Button>
+          <Link href="/dashboard/my-courses" style={{ textDecoration: 'none' }}>
+            <Button
+              size="small"
+              endIcon={<ChevronRightIcon />}
+              sx={{ color: 'primary.main', fontWeight: 600 }}
+            >
+              View all
+            </Button>
+          </Link>
         </Box>
 
         {inProgressCourses.length > 0 ? (
@@ -155,16 +155,16 @@ export async function StudentDashboard({ userId }: StudentDashboardProps) {
                       <LinearProgress value={enrollment.progress_percentage} variant="determinate" />
                     </Box>
 
-                    <Button
-                      component={NextLink}
-                      href={`/courses/${enrollment.course?.id}/learn`}
-                      variant="contained"
-                      size="small"
-                      fullWidth
-                      endIcon={<ChevronRightIcon />}
-                    >
-                      Continue
-                    </Button>
+                    <Link href={`/courses/${enrollment.course?.id}/learn`} style={{ textDecoration: 'none', display: 'block' }}>
+                      <Button
+                        variant="contained"
+                        size="small"
+                        fullWidth
+                        endIcon={<ChevronRightIcon />}
+                      >
+                        Continue
+                      </Button>
+                    </Link>
                   </CardContent>
                 </Card>
               </Grid>
@@ -193,14 +193,11 @@ export async function StudentDashboard({ userId }: StudentDashboardProps) {
               <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
                 Start your learning journey by enrolling in a course
               </Typography>
-              <Button
-                component={NextLink}
-                href="/courses"
-                variant="contained"
-                size="large"
-              >
-                Browse Courses
-              </Button>
+              <Link href="/courses" style={{ textDecoration: 'none' }}>
+                <Button variant="contained" size="large">
+                  Browse Courses
+                </Button>
+              </Link>
             </CardContent>
           </Card>
         )}

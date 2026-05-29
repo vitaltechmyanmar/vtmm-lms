@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import NextLink from 'next/link'
+import Link from 'next/link'
 import {
   Box,
   Button,
@@ -99,15 +99,11 @@ export async function InstructorDashboard({ userId }: InstructorDashboardProps) 
             Manage your courses and track your performance
           </Typography>
         </Box>
-        <Button
-          component={NextLink}
-          href="/dashboard/courses/new"
-          variant="contained"
-          startIcon={<AddCircleOutlineIcon />}
-          size="large"
-        >
-          Create New Course
-        </Button>
+        <Link href="/dashboard/courses/new" style={{ textDecoration: 'none' }}>
+          <Button variant="contained" startIcon={<AddCircleOutlineIcon />} size="large">
+            Create New Course
+          </Button>
+        </Link>
       </Box>
 
       {/* Stats */}
@@ -154,15 +150,11 @@ export async function InstructorDashboard({ userId }: InstructorDashboardProps) 
       <Box>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2.5 }}>
           <Typography variant="h6" fontWeight={700}>Your Courses</Typography>
-          <Button
-            component={NextLink}
-            href="/dashboard/courses"
-            size="small"
-            endIcon={<ChevronRightIcon />}
-            sx={{ color: 'primary.main', fontWeight: 600 }}
-          >
-            View all
-          </Button>
+          <Link href="/dashboard/courses" style={{ textDecoration: 'none' }}>
+            <Button size="small" endIcon={<ChevronRightIcon />} sx={{ color: 'primary.main', fontWeight: 600 }}>
+              View all
+            </Button>
+          </Link>
         </Box>
 
         {courses && courses.length > 0 ? (
@@ -208,15 +200,11 @@ export async function InstructorDashboard({ userId }: InstructorDashboardProps) 
                     <Typography variant="body2" fontWeight={600} color="primary.main" sx={{ mb: 2 }}>
                       {formatMMK(course.price_in_cents)}
                     </Typography>
-                    <Button
-                      component={NextLink}
-                      href={`/dashboard/courses/${course.id}`}
-                      variant="outlined"
-                      size="small"
-                      fullWidth
-                    >
-                      Manage Course
-                    </Button>
+                    <Link href={`/dashboard/courses/${course.id}`} style={{ textDecoration: 'none', display: 'block' }}>
+                      <Button variant="outlined" size="small" fullWidth>
+                        Manage Course
+                      </Button>
+                    </Link>
                   </CardContent>
                 </Card>
               </Grid>
@@ -245,15 +233,11 @@ export async function InstructorDashboard({ userId }: InstructorDashboardProps) 
               <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
                 Create your first course and start teaching
               </Typography>
-              <Button
-                component={NextLink}
-                href="/dashboard/courses/new"
-                variant="contained"
-                size="large"
-                startIcon={<AddCircleOutlineIcon />}
-              >
-                Create Course
-              </Button>
+              <Link href="/dashboard/courses/new" style={{ textDecoration: 'none' }}>
+                <Button variant="contained" size="large" startIcon={<AddCircleOutlineIcon />}>
+                  Create Course
+                </Button>
+              </Link>
             </CardContent>
           </Card>
         )}
