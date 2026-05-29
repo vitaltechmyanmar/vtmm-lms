@@ -32,13 +32,35 @@ export default async function DashboardLayout({
   return (
     <MuiThemeProvider>
       <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#f8fafc' }}>
+        {/* Fixed 256px sidebar (desktop only) */}
         <DashboardSidebar profile={profile as Profile} />
-        <div style={{ display: 'flex', flex: 1, flexDirection: 'column', paddingLeft: 0 }} className="lg:pl-64">
-          <DashboardHeader profile={profile as Profile} />
-          <main style={{ flex: 1, padding: '24px', paddingBottom: '96px' }} className="lg:pb-6">
-            {children}
-          </main>
+
+        {/* Main content area — offset by sidebar width on lg screens */}
+        <div style={{
+          display: 'flex',
+          flex: 1,
+          flexDirection: 'column',
+          minWidth: 0,
+          // On desktop: offset by sidebar (256px). On mobile: full width.
+        }}>
+          <style>{`
+            @media (min-width: 1024px) {
+              .dashboard-content { padding-left: 256px; }
+            }
+          `}</style>
+          <div className="dashboard-content" style={{ display: 'flex', flex: 1, flexDirection: 'column' }}>
+            <DashboardHeader profile={profile as Profile} />
+            <main style={{
+              flex: 1,
+              padding: '24px',
+              paddingBottom: '88px',
+            }}>
+              {children}
+            </main>
+          </div>
         </div>
+
+        {/* Mobile bottom nav */}
         <MobileBottomNav profile={profile as Profile} />
       </div>
     </MuiThemeProvider>
