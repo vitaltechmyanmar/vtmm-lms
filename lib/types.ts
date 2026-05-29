@@ -32,7 +32,19 @@ export interface Course {
   updated_at: string
   instructor?: Profile
   lessons?: Lesson[]
+  sections?: CourseSection[]
   enrollments_count?: number
+}
+
+export interface CourseSection {
+  id: string
+  course_id: string
+  title: string
+  description: string | null
+  order_index: number
+  created_at: string
+  updated_at: string
+  lessons?: Lesson[]
 }
 
 export interface Lesson {
@@ -43,6 +55,7 @@ export interface Lesson {
   video_url: string | null
   order_index: number
   duration_minutes: number
+  section_id: string | null
   created_at: string
   quiz?: Quiz
   resources?: LessonResource[]

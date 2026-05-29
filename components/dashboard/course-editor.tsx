@@ -41,12 +41,18 @@ import {
   FileText,
   ChevronUp,
   ChevronDown,
+  ChevronRight,
   X,
   Globe,
   Tag,
   BookOpen,
   ListChecks,
   ClipboardList,
+  Layers,
+  Pencil,
+  FolderOpen,
+  FolderClosed,
+  Inbox,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import Link from 'next/link'
@@ -54,7 +60,7 @@ import { QuizBuilder } from '@/components/dashboard/quiz-builder'
 import { CourseCoverUpload } from '@/components/dashboard/course-cover-upload'
 import { LessonResourceManager } from '@/components/dashboard/lesson-resource-manager'
 import { formatMMK, formatMMKAmount, parseMMK } from '@/lib/format-currency'
-import type { Course, Lesson, CourseLevel, Category } from '@/lib/types'
+import type { Course, Lesson, CourseSection, CourseLevel, Category } from '@/lib/types'
 
 interface CourseEditorProps {
   course: Course & { lessons: Lesson[] }
@@ -114,12 +120,32 @@ export function CourseEditor({ course, isAdmin = false }: CourseEditorProps) {
   const [tags, setTags] = useState<string[]>(course.tags || [])
   const [newTag, setNewTag] = useState('')
 
-  // Lessons
+  // Lessons & Sections
   const [lessons, setLessons] = useState<Lesson[]>(course.lessons)
+  const [sections, setSections] = useState<CourseSection[]>([])
   const [isLessonDialogOpen, setIsLessonDialogOpen] = useState(false)
   const [editingLesson, setEditingLesson] = useState<Lesson | null>(null)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [openQuizLessonId, setOpenQuizLessonId] = useState<string | null>(null)
+  const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set())
+
+  // Section dialog state
+  const [isSectionDialogOpen, setIsSectionDialogOpen] = useState(false)
+  const [editingSection, setEditingSection] = useState<CourseSection | null>(null)
+  const [isSectionEditOpen, setIsSectionEditOpen] = useState(false)
+
+  // Fetch sections on mount
+  useEffect(() => {
+    async function fetchSections() {
+      const { data } = await supabase
+        .from('course_sections')
+        .select('*')
+        .eq('course_id', course.id)
+        .order('order_index', { ascending: true })
+      setSections(data || [])
+    }
+    fetchSections()
+  }, [supabase, course.id])
 
   // ---- Course save ----
   async function handleSaveCourse() {
@@ -197,6 +223,98 @@ export function CourseEditor({ course, isAdmin = false }: CourseEditorProps) {
     setTags(tags.filter(t => t !== tag))
   }
 
+  // ---- Sections ----
+  async function handleAddSection(sectionData: { title: string; description?: string }) {
+    const { data, error } = await supabase
+      .from('course_sections')
+      .insert({
+        course_id: course.id,
+        title: sectionData.title,
+        description: sectionData.description || null,
+        order_index: sections.length,
+      })
+      .select()
+      .single()
+
+    if (error) {
+      toast.error(error.message)
+      return
+    }
+
+    setSections([...sections, data])
+    setIsSectionDialogOpen(false)
+    toast.success('Chapter added!')
+  }
+
+  async function handleUpdateSection(sectionId: string, sectionData: { title: string; description?: string }) {
+    const { error } = await supabase
+      .from('course_sections')
+      .update({
+        title: sectionData.title,
+        description: sectionData.description || null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', sectionId)
+
+    if (error) {
+      toast.error(error.message)
+      return
+    }
+
+    setSections(sections.map(s => s.id === sectionId ? { ...s, ...sectionData, description: sectionData.description || null } : s))
+    setEditingSection(null)
+    setIsSectionEditOpen(false)
+    toast.success('Chapter updated!')
+  }
+
+  async function handleDeleteSection(sectionId: string) {
+    // Unlink all lessons in this section before deleting
+    await supabase.from('lessons').update({ section_id: null }).eq('section_id', sectionId)
+
+    const { error } = await supabase.from('course_sections').delete().eq('id', sectionId)
+    if (error) {
+      toast.error(error.message)
+      return
+    }
+
+    setSections(sections.filter(s => s.id !== sectionId))
+    setLessons(lessons.map(l => l.section_id === sectionId ? { ...l, section_id: null } : l))
+    toast.success('Chapter deleted!')
+  }
+
+  async function moveSectionUp(index: number) {
+    if (index === 0) return
+    const newSections = [...sections]
+    ;[newSections[index], newSections[index - 1]] = [newSections[index - 1], newSections[index]]
+    await reindexSections(newSections)
+  }
+
+  async function moveSectionDown(index: number) {
+    if (index === sections.length - 1) return
+    const newSections = [...sections]
+    ;[newSections[index], newSections[index + 1]] = [newSections[index + 1], newSections[index]]
+    await reindexSections(newSections)
+  }
+
+  async function reindexSections(updatedSections: CourseSection[]) {
+    const reindexed = updatedSections.map((s, i) => ({ ...s, order_index: i }))
+    setSections(reindexed)
+    await Promise.all(
+      reindexed.map(s =>
+        supabase.from('course_sections').update({ order_index: s.order_index }).eq('id', s.id)
+      )
+    )
+  }
+
+  function toggleSectionCollapse(sectionId: string) {
+    setCollapsedSections(prev => {
+      const next = new Set(prev)
+      if (next.has(sectionId)) next.delete(sectionId)
+      else next.add(sectionId)
+      return next
+    })
+  }
+
   // ---- Lessons ----
   async function handleAddLesson(lessonData: Partial<Lesson>) {
     const { data, error } = await supabase
@@ -207,6 +325,7 @@ export function CourseEditor({ course, isAdmin = false }: CourseEditorProps) {
         content: lessonData.content || null,
         video_url: lessonData.video_url || null,
         duration_minutes: lessonData.duration_minutes || 0,
+        section_id: lessonData.section_id || null,
         order_index: lessons.length,
       })
       .select()
@@ -230,6 +349,7 @@ export function CourseEditor({ course, isAdmin = false }: CourseEditorProps) {
         content: lessonData.content || null,
         video_url: lessonData.video_url || null,
         duration_minutes: lessonData.duration_minutes || 0,
+        section_id: lessonData.section_id !== undefined ? lessonData.section_id : undefined,
       })
       .eq('id', lessonId)
 
@@ -251,24 +371,27 @@ export function CourseEditor({ course, isAdmin = false }: CourseEditorProps) {
       return
     }
     const updated = lessons.filter(l => l.id !== lessonId)
-    // Re-index remaining lessons
     await reindexLessons(updated)
     toast.success('Lesson deleted!')
   }
 
-  async function moveLesson(index: number, direction: 'up' | 'down') {
-    const newLessons = [...lessons]
+  async function moveLesson(lessonId: string, sectionLessons: Lesson[], index: number, direction: 'up' | 'down') {
     const targetIndex = direction === 'up' ? index - 1 : index + 1
-    if (targetIndex < 0 || targetIndex >= newLessons.length) return
-    ;[newLessons[index], newLessons[targetIndex]] = [newLessons[targetIndex], newLessons[index]]
-    await reindexLessons(newLessons)
+    if (targetIndex < 0 || targetIndex >= sectionLessons.length) return
+
+    // Build new lessons array with swapped items in this section
+    const newSectionLessons = [...sectionLessons]
+    ;[newSectionLessons[index], newSectionLessons[targetIndex]] = [newSectionLessons[targetIndex], newSectionLessons[index]]
+
+    // Replace the matching lessons in the full list
+    const sectionIds = new Set(sectionLessons.map(l => l.id))
+    const otherLessons = lessons.filter(l => !sectionIds.has(l.id))
+    await reindexLessons([...otherLessons, ...newSectionLessons])
   }
 
   async function reindexLessons(updatedLessons: Lesson[]) {
     const reindexed = updatedLessons.map((l, i) => ({ ...l, order_index: i }))
     setLessons(reindexed)
-
-    // Persist order to DB
     await Promise.all(
       reindexed.map(l =>
         supabase.from('lessons').update({ order_index: l.order_index }).eq('id', l.id)
@@ -276,7 +399,30 @@ export function CourseEditor({ course, isAdmin = false }: CourseEditorProps) {
     )
   }
 
+  async function assignLessonToSection(lessonId: string, sectionId: string | null) {
+    const { error } = await supabase
+      .from('lessons')
+      .update({ section_id: sectionId })
+      .eq('id', lessonId)
+
+    if (error) {
+      toast.error('Failed to update chapter assignment')
+      return
+    }
+
+    setLessons(lessons.map(l => l.id === lessonId ? { ...l, section_id: sectionId } : l))
+    toast.success('Chapter assignment updated!')
+  }
+
   const totalDuration = lessons.reduce((sum, l) => sum + (l.duration_minutes || 0), 0)
+
+  // Group lessons by section
+  const lessonsInSection = (sectionId: string | null) =>
+    lessons
+      .filter(l => l.section_id === sectionId)
+      .sort((a, b) => a.order_index - b.order_index)
+
+  const uncategorizedLessons = lessonsInSection(null)
 
   return (
     <div className="space-y-6">
@@ -360,14 +506,10 @@ export function CourseEditor({ course, isAdmin = false }: CourseEditorProps) {
         </Card>
         <Card>
           <CardContent className="flex items-center gap-3 p-4">
-            <Play className="h-5 w-5 text-primary" />
+            <Layers className="h-5 w-5 text-primary" />
             <div>
-              <p className="text-sm text-muted-foreground">Duration</p>
-              <p className="text-xl font-bold">
-                {totalDuration >= 60
-                  ? `${(totalDuration / 60).toFixed(1).replace(/\.0$/, '')}h`
-                  : `${totalDuration}m`}
-              </p>
+              <p className="text-sm text-muted-foreground">Chapters</p>
+              <p className="text-xl font-bold">{sections.length}</p>
             </div>
           </CardContent>
         </Card>
@@ -401,7 +543,7 @@ export function CourseEditor({ course, isAdmin = false }: CourseEditorProps) {
             Curriculum ({lessons.length})
           </TabsTrigger>
           <TabsTrigger value="outcomes">Outcomes</TabsTrigger>
-          <TabsTrigger value="tags">Tags & Meta</TabsTrigger>
+          <TabsTrigger value="tags">Tags &amp; Meta</TabsTrigger>
         </TabsList>
 
         {/* ---- DETAILS TAB ---- */}
@@ -522,192 +664,273 @@ export function CourseEditor({ course, isAdmin = false }: CourseEditorProps) {
               <div>
                 <CardTitle>Course Curriculum</CardTitle>
                 <CardDescription>
-                  {lessons.length} lessons &bull;{' '}
+                  {sections.length} chapters &bull; {lessons.length} lessons &bull;{' '}
                   {totalDuration >= 60
                     ? `${(totalDuration / 60).toFixed(1).replace(/\.0$/, '')} hours`
                     : `${totalDuration} minutes`} total
                 </CardDescription>
               </div>
-              <Dialog open={isLessonDialogOpen} onOpenChange={setIsLessonDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Add Lesson
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle>Add New Lesson</DialogTitle>
-                    <DialogDescription>Create a lesson with video and/or text content</DialogDescription>
-                  </DialogHeader>
-                  <LessonForm
-                    key="add-lesson"
-                    onSubmit={handleAddLesson}
-                    onCancel={() => setIsLessonDialogOpen(false)}
-                  />
-                </DialogContent>
-              </Dialog>
+              <div className="flex gap-2">
+                {/* Add Chapter */}
+                <Dialog open={isSectionDialogOpen} onOpenChange={setIsSectionDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline">
+                      <Layers className="mr-2 h-4 w-4" />
+                      Add Chapter
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Add New Chapter</DialogTitle>
+                      <DialogDescription>Create a chapter to group related lessons</DialogDescription>
+                    </DialogHeader>
+                    <SectionForm
+                      key="add-section"
+                      onSubmit={handleAddSection}
+                      onCancel={() => setIsSectionDialogOpen(false)}
+                    />
+                  </DialogContent>
+                </Dialog>
+
+                {/* Add Lesson */}
+                <Dialog open={isLessonDialogOpen} onOpenChange={setIsLessonDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button>
+                      <Plus className="mr-2 h-4 w-4" />
+                      Add Lesson
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle>Add New Lesson</DialogTitle>
+                      <DialogDescription>Create a lesson with video and/or text content</DialogDescription>
+                    </DialogHeader>
+                    <LessonForm
+                      key="add-lesson"
+                      sections={sections}
+                      onSubmit={handleAddLesson}
+                      onCancel={() => setIsLessonDialogOpen(false)}
+                    />
+                  </DialogContent>
+                </Dialog>
+              </div>
             </CardHeader>
             <CardContent>
-              {lessons.length > 0 ? (
-                <div className="space-y-2">
-                  {lessons.map((lesson, index) => (
-                    <div
-                      key={lesson.id}
-                      className="rounded-lg border bg-card"
-                    >
-                    <div className="flex items-center gap-3 p-4">
-                      <GripVertical className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
-                      <div className="flex w-8 flex-shrink-0 flex-col gap-0.5">
-                        <button
-                          onClick={() => moveLesson(index, 'up')}
-                          disabled={index === 0}
-                          className="flex items-center justify-center rounded p-0.5 text-muted-foreground hover:text-foreground disabled:opacity-30"
-                          aria-label="Move lesson up"
-                        >
-                          <ChevronUp className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => moveLesson(index, 'down')}
-                          disabled={index === lessons.length - 1}
-                          className="flex items-center justify-center rounded p-0.5 text-muted-foreground hover:text-foreground disabled:opacity-30"
-                          aria-label="Move lesson down"
-                        >
-                          <ChevronDown className="h-4 w-4" />
-                        </button>
-                      </div>
-                      <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
-                        {index + 1}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate font-medium">{lesson.title}</p>
-                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                          {lesson.video_url ? (
-                            <span className="flex items-center gap-1">
-                              <Play className="h-3 w-3" />
-                              Video
-                            </span>
-                          ) : (
-                            <span className="flex items-center gap-1">
-                              <FileText className="h-3 w-3" />
-                              Text
-                            </span>
-                          )}
-                          {(lesson.duration_minutes ?? 0) > 0 && (
-                            <span>
-                              {lesson.duration_minutes! >= 60
-                                ? `${(lesson.duration_minutes! / 60).toFixed(1).replace(/\.0$/, '')}h`
-                                : `${lesson.duration_minutes}min`}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      {/* Edit lesson */}
-                      <Dialog
-                        open={isEditDialogOpen && editingLesson?.id === lesson.id}
-                        onOpenChange={open => {
-                          if (!open) {
-                            setIsEditDialogOpen(false)
-                            setEditingLesson(null)
-                          }
-                        }}
-                      >
-                        <DialogTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              setEditingLesson(lesson)
-                              setIsEditDialogOpen(true)
-                            }}
-                          >
-                            Edit
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
-                          <DialogHeader>
-                            <DialogTitle>Edit Lesson</DialogTitle>
-                            <DialogDescription>Update lesson content and settings</DialogDescription>
-                          </DialogHeader>
-                          {editingLesson?.id === lesson.id && (
-                            <LessonForm
-                              key={`edit-${lesson.id}`}
-                              lesson={editingLesson}
-                              onSubmit={data => handleUpdateLesson(lesson.id, data)}
-                              onCancel={() => {
-                                setIsEditDialogOpen(false)
-                                setEditingLesson(null)
-                              }}
-                            />
-                          )}
-                        </DialogContent>
-                      </Dialog>
-                      {/* Delete lesson */}
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-destructive hover:text-destructive"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Delete lesson?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              &ldquo;{lesson.title}&rdquo; will be permanently deleted along with
-                              all student progress for this lesson.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => handleDeleteLesson(lesson.id)}
-                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                            >
-                              Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                      {/* Quiz toggle */}
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        title="Manage quiz"
-                        onClick={() =>
-                          setOpenQuizLessonId(
-                            openQuizLessonId === lesson.id ? null : lesson.id
-                          )
-                        }
-                        className={openQuizLessonId === lesson.id ? 'text-primary' : ''}
-                      >
-                        <ClipboardList className="h-4 w-4" />
-                      </Button>
-                      {/* Resources */}
-                      <LessonResourceManager lessonId={lesson.id} />
-                    </div>
-                    {/* Quiz panel */}
-                    {openQuizLessonId === lesson.id && (
-                      <div className="border-t px-4 pb-4 pt-3">
-                        <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                          Quiz for: {lesson.title}
-                        </p>
-                        <QuizBuilder lessonId={lesson.id} lessonTitle={lesson.title} />
-                      </div>
-                    )}
-                    </div>
-                  ))}
+              {sections.length === 0 && lessons.length === 0 ? (
+                <div className="py-12 text-center">
+                  <Layers className="mx-auto h-12 w-12 text-muted-foreground" />
+                  <h3 className="mt-4 text-lg font-semibold">No content yet</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Add a chapter first, then add lessons inside it
+                  </p>
                 </div>
               ) : (
-                <div className="py-12 text-center">
-                  <FileText className="mx-auto h-12 w-12 text-muted-foreground" />
-                  <h3 className="mt-4 text-lg font-semibold">No lessons yet</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Add your first lesson to get started
-                  </p>
+                <div className="space-y-3">
+                  {/* ---- Sections ---- */}
+                  {sections.map((section, sectionIndex) => {
+                    const sectionLessons = lessonsInSection(section.id)
+                    const isCollapsed = collapsedSections.has(section.id)
+                    return (
+                      <div
+                        key={section.id}
+                        className="overflow-hidden rounded-xl border bg-muted/20"
+                      >
+                        {/* Section Header */}
+                        <div className="flex items-center gap-3 bg-muted/40 px-4 py-3">
+                          <GripVertical className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+
+                          {/* Up/Down */}
+                          <div className="flex flex-col gap-0.5">
+                            <button
+                              onClick={() => moveSectionUp(sectionIndex)}
+                              disabled={sectionIndex === 0}
+                              className="flex items-center justify-center rounded p-0.5 text-muted-foreground hover:text-foreground disabled:opacity-30"
+                              aria-label="Move chapter up"
+                            >
+                              <ChevronUp className="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                              onClick={() => moveSectionDown(sectionIndex)}
+                              disabled={sectionIndex === sections.length - 1}
+                              className="flex items-center justify-center rounded p-0.5 text-muted-foreground hover:text-foreground disabled:opacity-30"
+                              aria-label="Move chapter down"
+                            >
+                              <ChevronDown className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+
+                          {/* Section Number Badge */}
+                          <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md bg-primary text-xs font-bold text-primary-foreground">
+                            {sectionIndex + 1}
+                          </div>
+
+                          {/* Collapse toggle + Title */}
+                          <button
+                            className="flex min-w-0 flex-1 items-center gap-2 text-left"
+                            onClick={() => toggleSectionCollapse(section.id)}
+                          >
+                            {isCollapsed
+                              ? <FolderClosed className="h-4 w-4 flex-shrink-0 text-primary" />
+                              : <FolderOpen className="h-4 w-4 flex-shrink-0 text-primary" />
+                            }
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate font-semibold text-sm">{section.title}</p>
+                              {section.description && (
+                                <p className="truncate text-xs text-muted-foreground">{section.description}</p>
+                              )}
+                            </div>
+                            <Badge variant="secondary" className="flex-shrink-0 text-xs">
+                              {sectionLessons.length} {sectionLessons.length === 1 ? 'lesson' : 'lessons'}
+                            </Badge>
+                            <ChevronRight
+                              className={`h-4 w-4 flex-shrink-0 text-muted-foreground transition-transform ${isCollapsed ? '' : 'rotate-90'}`}
+                            />
+                          </button>
+
+                          {/* Edit section */}
+                          <Dialog
+                            open={isSectionEditOpen && editingSection?.id === section.id}
+                            onOpenChange={open => {
+                              if (!open) {
+                                setIsSectionEditOpen(false)
+                                setEditingSection(null)
+                              }
+                            }}
+                          >
+                            <DialogTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 flex-shrink-0"
+                                onClick={() => {
+                                  setEditingSection(section)
+                                  setIsSectionEditOpen(true)
+                                }}
+                              >
+                                <Pencil className="h-3.5 w-3.5" />
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>Edit Chapter</DialogTitle>
+                                <DialogDescription>Update chapter title and description</DialogDescription>
+                              </DialogHeader>
+                              {editingSection?.id === section.id && (
+                                <SectionForm
+                                  key={`edit-section-${section.id}`}
+                                  section={editingSection}
+                                  onSubmit={data => handleUpdateSection(section.id, data)}
+                                  onCancel={() => {
+                                    setIsSectionEditOpen(false)
+                                    setEditingSection(null)
+                                  }}
+                                />
+                              )}
+                            </DialogContent>
+                          </Dialog>
+
+                          {/* Delete section */}
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 flex-shrink-0 text-destructive hover:text-destructive"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Delete chapter?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  &ldquo;{section.title}&rdquo; will be deleted. Lessons inside will move to Uncategorized.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => handleDeleteSection(section.id)}
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                  Delete Chapter
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+
+                        {/* Section Lessons */}
+                        {!isCollapsed && (
+                          <div className="divide-y">
+                            {sectionLessons.length > 0 ? (
+                              sectionLessons.map((lesson, lessonIndex) => (
+                                <LessonRow
+                                  key={lesson.id}
+                                  lesson={lesson}
+                                  index={lessonIndex}
+                                  total={sectionLessons.length}
+                                  sections={sections}
+                                  isEditDialogOpen={isEditDialogOpen}
+                                  editingLesson={editingLesson}
+                                  openQuizLessonId={openQuizLessonId}
+                                  onMoveUp={() => moveLesson(lesson.id, sectionLessons, lessonIndex, 'up')}
+                                  onMoveDown={() => moveLesson(lesson.id, sectionLessons, lessonIndex, 'down')}
+                                  onEdit={() => { setEditingLesson(lesson); setIsEditDialogOpen(true) }}
+                                  onEditClose={() => { setIsEditDialogOpen(false); setEditingLesson(null) }}
+                                  onUpdate={data => handleUpdateLesson(lesson.id, data)}
+                                  onDelete={() => handleDeleteLesson(lesson.id)}
+                                  onQuizToggle={() => setOpenQuizLessonId(openQuizLessonId === lesson.id ? null : lesson.id)}
+                                  onAssignSection={sectionId => assignLessonToSection(lesson.id, sectionId)}
+                                  indent
+                                />
+                              ))
+                            ) : (
+                              <div className="flex items-center gap-2 px-6 py-4 text-sm text-muted-foreground">
+                                <Inbox className="h-4 w-4" />
+                                No lessons in this chapter yet. Add a lesson and assign it here.
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
+
+                  {/* ---- Uncategorized lessons ---- */}
+                  {uncategorizedLessons.length > 0 && (
+                    <div className="overflow-hidden rounded-xl border border-dashed">
+                      <div className="flex items-center gap-2 border-b bg-muted/20 px-4 py-3">
+                        <Inbox className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm font-medium text-muted-foreground">Uncategorized</span>
+                        <Badge variant="outline" className="ml-auto text-xs">
+                          {uncategorizedLessons.length} {uncategorizedLessons.length === 1 ? 'lesson' : 'lessons'}
+                        </Badge>
+                      </div>
+                      <div className="divide-y">
+                        {uncategorizedLessons.map((lesson, lessonIndex) => (
+                          <LessonRow
+                            key={lesson.id}
+                            lesson={lesson}
+                            index={lessonIndex}
+                            total={uncategorizedLessons.length}
+                            sections={sections}
+                            isEditDialogOpen={isEditDialogOpen}
+                            editingLesson={editingLesson}
+                            openQuizLessonId={openQuizLessonId}
+                            onMoveUp={() => moveLesson(lesson.id, uncategorizedLessons, lessonIndex, 'up')}
+                            onMoveDown={() => moveLesson(lesson.id, uncategorizedLessons, lessonIndex, 'down')}
+                            onEdit={() => { setEditingLesson(lesson); setIsEditDialogOpen(true) }}
+                            onEditClose={() => { setIsEditDialogOpen(false); setEditingLesson(null) }}
+                            onUpdate={data => handleUpdateLesson(lesson.id, data)}
+                            onDelete={() => handleDeleteLesson(lesson.id)}
+                            onQuizToggle={() => setOpenQuizLessonId(openQuizLessonId === lesson.id ? null : lesson.id)}
+                            onAssignSection={sectionId => assignLessonToSection(lesson.id, sectionId)}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </CardContent>
@@ -771,7 +994,7 @@ export function CourseEditor({ course, isAdmin = false }: CourseEditorProps) {
           {/* Requirements */}
           <Card>
             <CardHeader>
-              <CardTitle>Requirements & Prerequisites</CardTitle>
+              <CardTitle>Requirements &amp; Prerequisites</CardTitle>
               <CardDescription>
                 What students should know or have before taking this course
               </CardDescription>
@@ -892,10 +1115,270 @@ export function CourseEditor({ course, isAdmin = false }: CourseEditorProps) {
   )
 }
 
+// ---- Lesson Row (extracted component) ----
+
+interface LessonRowProps {
+  lesson: Lesson
+  index: number
+  total: number
+  sections: CourseSection[]
+  isEditDialogOpen: boolean
+  editingLesson: Lesson | null
+  openQuizLessonId: string | null
+  onMoveUp: () => void
+  onMoveDown: () => void
+  onEdit: () => void
+  onEditClose: () => void
+  onUpdate: (data: Partial<Lesson>) => Promise<void>
+  onDelete: () => void
+  onQuizToggle: () => void
+  onAssignSection: (sectionId: string | null) => void
+  indent?: boolean
+}
+
+function LessonRow({
+  lesson,
+  index,
+  total,
+  sections,
+  isEditDialogOpen,
+  editingLesson,
+  openQuizLessonId,
+  onMoveUp,
+  onMoveDown,
+  onEdit,
+  onEditClose,
+  onUpdate,
+  onDelete,
+  onQuizToggle,
+  onAssignSection,
+  indent = false,
+}: LessonRowProps) {
+  return (
+    <div className={indent ? 'bg-background' : ''}>
+      <div className="flex items-center gap-3 px-4 py-3">
+        <GripVertical className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+        <div className="flex w-7 flex-shrink-0 flex-col gap-0.5">
+          <button
+            onClick={onMoveUp}
+            disabled={index === 0}
+            className="flex items-center justify-center rounded p-0.5 text-muted-foreground hover:text-foreground disabled:opacity-30"
+            aria-label="Move lesson up"
+          >
+            <ChevronUp className="h-3.5 w-3.5" />
+          </button>
+          <button
+            onClick={onMoveDown}
+            disabled={index === total - 1}
+            className="flex items-center justify-center rounded p-0.5 text-muted-foreground hover:text-foreground disabled:opacity-30"
+            aria-label="Move lesson down"
+          >
+            <ChevronDown className="h-3.5 w-3.5" />
+          </button>
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-medium">{lesson.title}</p>
+          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+            {lesson.video_url ? (
+              <span className="flex items-center gap-1">
+                <Play className="h-3 w-3" />
+                Video
+              </span>
+            ) : (
+              <span className="flex items-center gap-1">
+                <FileText className="h-3 w-3" />
+                Text
+              </span>
+            )}
+            {(lesson.duration_minutes ?? 0) > 0 && (
+              <span>
+                {lesson.duration_minutes! >= 60
+                  ? `${(lesson.duration_minutes! / 60).toFixed(1).replace(/\.0$/, '')}h`
+                  : `${lesson.duration_minutes}min`}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Chapter Assign Dropdown */}
+        {sections.length > 0 && (
+          <Select
+            value={lesson.section_id ?? 'none'}
+            onValueChange={val => onAssignSection(val === 'none' ? null : val)}
+          >
+            <SelectTrigger className="h-7 w-36 text-xs">
+              <SelectValue placeholder="No chapter" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">
+                <span className="text-muted-foreground">No chapter</span>
+              </SelectItem>
+              {sections.map(s => (
+                <SelectItem key={s.id} value={s.id}>
+                  {s.title}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+
+        {/* Edit lesson */}
+        <Dialog
+          open={isEditDialogOpen && editingLesson?.id === lesson.id}
+          onOpenChange={open => { if (!open) onEditClose() }}
+        >
+          <DialogTrigger asChild>
+            <Button variant="ghost" size="sm" onClick={onEdit}>
+              Edit
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Edit Lesson</DialogTitle>
+              <DialogDescription>Update lesson content and settings</DialogDescription>
+            </DialogHeader>
+            {editingLesson?.id === lesson.id && (
+              <LessonForm
+                key={`edit-${lesson.id}`}
+                lesson={editingLesson}
+                sections={sections}
+                onSubmit={onUpdate}
+                onCancel={onEditClose}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete lesson */}
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-destructive hover:text-destructive"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete lesson?</AlertDialogTitle>
+              <AlertDialogDescription>
+                &ldquo;{lesson.title}&rdquo; will be permanently deleted along with
+                all student progress for this lesson.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={onDelete}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        {/* Quiz toggle */}
+        <Button
+          variant="ghost"
+          size="icon"
+          title="Manage quiz"
+          onClick={onQuizToggle}
+          className={openQuizLessonId === lesson.id ? 'text-primary' : ''}
+        >
+          <ClipboardList className="h-4 w-4" />
+        </Button>
+
+        {/* Resources */}
+        <LessonResourceManager lessonId={lesson.id} />
+      </div>
+
+      {/* Quiz panel */}
+      {openQuizLessonId === lesson.id && (
+        <div className="border-t px-4 pb-4 pt-3">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Quiz for: {lesson.title}
+          </p>
+          <QuizBuilder lessonId={lesson.id} lessonTitle={lesson.title} />
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ---- Section Form ----
+
+interface SectionFormProps {
+  section?: CourseSection
+  onSubmit: (data: { title: string; description?: string }) => Promise<void>
+  onCancel: () => void
+}
+
+function SectionForm({ section, onSubmit, onCancel }: SectionFormProps) {
+  const [title, setTitle] = useState(section?.title || '')
+  const [description, setDescription] = useState(section?.description || '')
+  const [isLoading, setIsLoading] = useState(false)
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!title.trim()) return
+    setIsLoading(true)
+    await onSubmit({ title: title.trim(), description: description.trim() || undefined })
+    setIsLoading(false)
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="sectionTitle">Chapter Title *</Label>
+        <Input
+          id="sectionTitle"
+          value={title}
+          onChange={e => setTitle(e.target.value)}
+          placeholder="e.g. Introduction to Programming"
+          required
+          autoFocus
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="sectionDesc">Description (optional)</Label>
+        <Textarea
+          id="sectionDesc"
+          value={description}
+          onChange={e => setDescription(e.target.value)}
+          rows={3}
+          placeholder="Brief overview of what this chapter covers..."
+        />
+      </div>
+      <div className="flex gap-2 pt-2">
+        <Button type="submit" disabled={isLoading || !title.trim()}>
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Saving...
+            </>
+          ) : section ? (
+            'Update Chapter'
+          ) : (
+            'Add Chapter'
+          )}
+        </Button>
+        <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
+          Cancel
+        </Button>
+      </div>
+    </form>
+  )
+}
+
 // ---- Lesson Form ----
 
 interface LessonFormProps {
   lesson?: Lesson
+  sections: CourseSection[]
   onSubmit: (data: Partial<Lesson>) => Promise<void>
   onCancel: () => void
 }
@@ -919,10 +1402,11 @@ function getEmbedUrl(url: string): string | null {
   return getYouTubeEmbedUrl(url) || getVimeoEmbedUrl(url)
 }
 
-function LessonForm({ lesson, onSubmit, onCancel }: LessonFormProps) {
+function LessonForm({ lesson, sections, onSubmit, onCancel }: LessonFormProps) {
   const [title, setTitle] = useState(lesson?.title || '')
   const [content, setContent] = useState(lesson?.content || '')
   const [videoUrl, setVideoUrl] = useState(lesson?.video_url || '')
+  const [sectionId, setSectionId] = useState<string>(lesson?.section_id ?? 'none')
   const [durationHours, setDurationHours] = useState(
     lesson?.duration_minutes
       ? (lesson.duration_minutes / 60).toFixed(2).replace(/\.?0+$/, '')
@@ -941,6 +1425,7 @@ function LessonForm({ lesson, onSubmit, onCancel }: LessonFormProps) {
       content: content.trim() || null,
       video_url: videoUrl.trim() || null,
       duration_minutes: Math.round((parseFloat(durationHours) || 0) * 60),
+      section_id: sectionId === 'none' ? null : sectionId,
     })
     setIsLoading(false)
   }
@@ -958,6 +1443,26 @@ function LessonForm({ lesson, onSubmit, onCancel }: LessonFormProps) {
           autoFocus
         />
       </div>
+
+      {/* Chapter assignment */}
+      {sections.length > 0 && (
+        <div className="space-y-2">
+          <Label>Chapter / Section</Label>
+          <Select value={sectionId} onValueChange={setSectionId}>
+            <SelectTrigger>
+              <SelectValue placeholder="No chapter (Uncategorized)" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">No chapter (Uncategorized)</SelectItem>
+              {sections.map(s => (
+                <SelectItem key={s.id} value={s.id}>
+                  {s.title}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
 
       <div className="space-y-2">
         <Label htmlFor="videoUrl">YouTube / Vimeo URL</Label>

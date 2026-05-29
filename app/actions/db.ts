@@ -41,6 +41,14 @@ export async function getCourseDetail(courseId: string) {
     .from('courses')
     .select(`
       *,
+      sections:course_sections (
+        id,
+        title,
+        description,
+        order_index,
+        created_at,
+        updated_at
+      ),
       lessons (
         id,
         title,
@@ -48,6 +56,8 @@ export async function getCourseDetail(courseId: string) {
         content,
         order_index,
         duration_minutes,
+        section_id,
+        created_at,
         quizzes (
           id,
           title,
@@ -59,6 +69,7 @@ export async function getCourseDetail(courseId: string) {
     .single()
   return { data, error }
 }
+
 
 export async function getStudentEnrollments(userId: string) {
   const supabase = await createClient()
